@@ -59,7 +59,19 @@ echo "✅ Panel files installed"
 # Version File
 
 echo "1.0.0" > /opt/mehboobxt/version
+# Create Panel Command
 
+echo "🔗 Creating mehboobxt command..."
+
+cat > /usr/local/bin/mehboobxt << 'EOF'
+#!/bin/bash
+cd /opt/mehboobxt
+bash menu.sh
+EOF
+
+chmod +x /usr/local/bin/mehboobxt
+
+echo "✅ Command created: mehboobxt"
 echo ""
 echo "======================================"
 echo " ✅ MehboobXT Panel Installed"
