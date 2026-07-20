@@ -36,7 +36,26 @@ mkdir -p /opt/mehboobxt
 mkdir -p /opt/mehboobxt/core
 mkdir -p /opt/mehboobxt/modules
 mkdir -p /opt/mehboobxt/webpanel
+# Download Panel Files
 
+echo "📦 Downloading MehboobXT Panel files..."
+
+cd /opt/mehboobxt
+
+git clone https://github.com/mehboob-xt/mehboobxt-panel.git temp
+
+cp temp/menu.sh .
+cp temp/install.sh .
+cp -r temp/core/* core/
+cp -r temp/modules/* modules/
+
+rm -rf temp
+
+chmod +x menu.sh
+chmod +x core/*.sh
+chmod +x modules/*.sh
+
+echo "✅ Panel files installed"
 # Version File
 
 echo "1.0.0" > /opt/mehboobxt/version
