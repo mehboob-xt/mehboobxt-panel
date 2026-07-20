@@ -40,11 +40,17 @@ sleep 2
 ;;
 
 2)
+
 read -p "Username to delete: " deluser
 
-userdel -r $deluser
+if id "$deluser" >/dev/null 2>&1
+then
+    userdel -r "$deluser"
+    echo "✅ User Removed: $deluser"
+else
+    echo "❌ User Not Found"
+fi
 
-echo "✅ User Removed"
 sleep 2
 ;;
 
