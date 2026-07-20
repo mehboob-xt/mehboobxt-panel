@@ -24,17 +24,20 @@ case $vlessopt in
 
 1)
 echo "Creating VLESS Account..."
-sleep 2
+uuid=$(cat /proc/sys/kernel/random/uuid)
+echo "UUID: $uuid"
+sleep 3
 ;;
 
 2)
-echo "Listing VLESS Account..."
-sleep 2
+echo "VLESS Account List"
+echo "No account yet"
+sleep 3
 ;;
 
 3)
-echo "Deleting VLESS Account..."
-sleep 2
+echo "Delete VLESS Account"
+sleep 3
 ;;
 
 4)
