@@ -82,7 +82,7 @@ vps_info
 ;;
 
 10)
-update_menu
+update_panel
 ;;
 
 11)
