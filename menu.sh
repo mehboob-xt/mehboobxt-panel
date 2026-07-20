@@ -1,6 +1,13 @@
 #!/bin/bash
 source modules/ssh.sh
 clear
+source modules/ssh.sh
+source modules/vless.sh
+source modules/vmess.sh
+source modules/trojan.sh
+source modules/expiry.sh
+source modules/account_generator.sh
+source modules/backup.sh
 
 GREEN="\033[0;32m"
 CYAN="\033[0;36m"
@@ -39,33 +46,27 @@ ssh_menu
 ;;
 
 2)
-source modules/vless.sh
 vless_menu
 ;;
 
 3)
-echo "VMess Manager Loading..."
-sleep 2
+vmess_menu
 ;;
 
 4)
-echo "Trojan Manager Loading..."
-sleep 2
+trojan_menu
 ;;
 
 5)
-source core/expiry.sh
 expiry_menu
 ;;
 
 6)
-echo "Account Generator Loading..."
-sleep 2
+account_generator
 ;;
 
 7)
-echo "Backup System Loading..."
-sleep 2
+backup_menu
 ;;
 
 8)
