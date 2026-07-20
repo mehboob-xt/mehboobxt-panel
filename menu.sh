@@ -39,8 +39,9 @@ ssh_menu
 ;;
 
 2)
-echo "VLESS Manager Loading..."
-sleep 2
+
+source modules/vless.sh
+vless_menu
 ;;
 
 3)
