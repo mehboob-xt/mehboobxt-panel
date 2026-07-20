@@ -21,6 +21,7 @@ echo -e "${GREEN}01.${RESET} SSH Manager"
 echo -e "${GREEN}02.${RESET} VLESS Manager"
 echo -e "${GREEN}03.${RESET} VMess Manager"
 echo -e "${GREEN}04.${RESET} Trojan Manager"
+echo -e "${GREEN}08.${RESET} Expiry Manager"
 echo -e "${GREEN}05.${RESET} Account Generator"
 echo -e "${GREEN}06.${RESET} Backup System"
 echo -e "${GREEN}07.${RESET} VPS Information"
@@ -53,27 +54,32 @@ sleep 2
 ;;
 
 5)
+source core/expiry.sh
+expiry_menu
+;;
+
+6)
 echo "Account Generator Loading..."
 sleep 2
 ;;
 
-6)
+7)
 echo "Backup System Loading..."
 sleep 2
 ;;
 
-7)
+8)
 echo "Checking VPS..."
 uname -a
 sleep 3
 ;;
 
-8)
+9)
 echo "Updating Panel..."
 sleep 2
 ;;
 
-9)
+10)
 echo "Exit MehboobXT Panel"
 exit
 ;;
