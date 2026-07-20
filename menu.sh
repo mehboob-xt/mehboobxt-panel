@@ -1,5 +1,5 @@
 #!/bin/bash
-
+source modules/ssh.sh
 clear
 
 GREEN="\033[0;32m"
@@ -34,8 +34,7 @@ read -p " Select Option : " option
 case $option in
 
 1)
-echo "SSH Manager Loading..."
-sleep 2
+ssh_menu
 ;;
 
 2)
