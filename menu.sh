@@ -9,6 +9,8 @@ source modules/expiry.sh
 source modules/referral.sh
 source modules/account_generator.sh
 source modules/backup.sh
+source modules/vps_info.sh
+source modules/update.sh
 
 GREEN="\033[0;32m"
 CYAN="\033[0;36m"
@@ -76,14 +78,11 @@ backup_menu
 ;;
 
 9)
-echo "Checking VPS..."
-uname -a
-sleep 3
+vps_info
 ;;
 
 10)
-echo "Updating Panel..."
-sleep 2
+update_panel
 ;;
 
 11)
