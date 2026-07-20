@@ -6,6 +6,7 @@ source modules/vless.sh
 source modules/vmess.sh
 source modules/trojan.sh
 source modules/expiry.sh
+source modules/referral.sh
 source modules/account_generator.sh
 source modules/backup.sh
 
@@ -29,11 +30,12 @@ echo -e "${GREEN}02.${RESET} VLESS Manager"
 echo -e "${GREEN}03.${RESET} VMess Manager"
 echo -e "${GREEN}04.${RESET} Trojan Manager"
 echo -e "${GREEN}05.${RESET} Expiry Manager"
-echo -e "${GREEN}06.${RESET} Account Generator"
-echo -e "${GREEN}07.${RESET} Backup System"
-echo -e "${GREEN}08.${RESET} VPS Information"
-echo -e "${GREEN}09.${RESET} Panel Update"
-echo -e "${GREEN}10.${RESET} Exit"
+echo -e "${GREEN}06.${RESET} Referral System"
+echo -e "${GREEN}07.${RESET} Account Generator"
+echo -e "${GREEN}08.${RESET} Backup System"
+echo -e "${GREEN}09.${RESET} VPS Information"
+echo -e "${GREEN}10.${RESET} Panel Update"
+echo -e "${GREEN}11.${RESET} Exit"
 
 echo ""
 read -p " Select Option : " option
@@ -62,25 +64,29 @@ expiry_menu
 ;;
 
 6)
-account_generator
+referral_menu
 ;;
 
 7)
-backup_menu
+account_generator
 ;;
 
 8)
+backup_menu
+;;
+
+9)
 echo "Checking VPS..."
 uname -a
 sleep 3
 ;;
 
-9)
+10)
 echo "Updating Panel..."
 sleep 2
 ;;
 
-10)
+11)
 echo "Exit MehboobXT Panel"
 exit
 ;;
