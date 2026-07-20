@@ -1,6 +1,6 @@
 #!/bin/bash
 
-update_menu(){
+update_panel(){
 
 clear
 
@@ -8,36 +8,16 @@ echo "=========================="
 echo "🔄 MehboobXT Panel Update"
 echo "=========================="
 
-echo ""
-echo "Checking Updates..."
-
 cd /opt/mehboobxt-panel
 
-git fetch
+echo "Checking updates..."
 
-git status
+git pull
 
 echo ""
-read -p "Update Panel Now? (y/n): " update
+echo "Panel Updated ✅"
 
-case $update in
-
-y|Y)
-echo "Updating Panel..."
-git pull
-echo "Update Complete ✅"
-;;
-
-n|N)
-echo "Update Cancelled"
-;;
-
-*)
-echo "Invalid Option"
-;;
-
-esac
-
-sleep 3
+echo ""
+read -p "Press Enter to Back"
 
 }
