@@ -2,68 +2,30 @@
 
 account_generator(){
 
-while true
-do
-
 clear
 
-echo "=============================="
-echo "🚀 MehboobXT Account Generator"
-echo "=============================="
+echo "=========================="
+echo "👤 MehboobXT Account Generator"
+echo "=========================="
 
-echo "1. Generate SSH Account"
-echo "2. Generate VLESS Account"
-echo "3. Generate VMESS Account"
-echo "4. Generate Trojan Account"
-echo "5. Back"
+mkdir -p data
+
+username="user$(date +%s)"
+password=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 8)
+
+read -p "Enter Expiry Days: " days
+
+expiry=$(date -d "+$days days" +"%Y-%m-%d")
 
 echo ""
-
-read -p "Select Option: " genopt
-
-case $genopt in
-
-1)
-echo "Generating SSH Account..."
-username="user$(shuf -i 1000-9999 -n 1)"
-password="$(openssl rand -hex 4)"
+echo "Account Created ✅"
 echo "Username: $username"
 echo "Password: $password"
-sleep 3
-;;
+echo "Expiry: $expiry"
 
-2)
-echo "Generating VLESS Account..."
-uuid=$(cat /proc/sys/kernel/random/uuid)
-echo "UUID: $uuid"
-sleep 3
-;;
+echo "$username|$password|$expiry" >> data/accounts.db
 
-3)
-echo "Generating VMESS Account..."
-uuid=$(cat /proc/sys/kernel/random/uuid)
-echo "UUID: $uuid"
-sleep 3
-;;
-
-4)
-echo "Generating Trojan Account..."
-password=$(openssl rand -hex 8)
-echo "Password: $password"
-sleep 3
-;;
-
-5)
-break
-;;
-
-*)
-echo "Invalid Option"
-sleep 2
-;;
-
-esac
-
-done
+echo ""
+read -p "Press Enter to Back"
 
 }
