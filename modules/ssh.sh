@@ -23,13 +23,19 @@ read -p "Select Option: " sshopt
 case $sshopt in
 
 1)
+
 read -p "Username: " user
 read -p "Password: " pass
 
-useradd -m $user
-echo "$user:$pass" | chpasswd
+if id "$user" >/dev/null 2>&1
+then
+    echo "❌ User already exists"
+else
+    useradd -m "$user"
+    echo "$user:$pass" | chpasswd
+    echo "✅ SSH User Created: $user"
+fi
 
-echo "✅ SSH User Created: $user"
 sleep 2
 ;;
 
