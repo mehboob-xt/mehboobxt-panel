@@ -74,7 +74,8 @@ echo "1. Create VLESS Account"
 echo "2. List VLESS Account"
 echo "3. Delete VLESS Account"
 echo "4. Edit VLESS Account"
-echo "5. Back"
+echo "5. Enable/Disable Account"
+echo "6. Back"
 
 echo ""
 
@@ -233,6 +234,45 @@ sleep 3
 ;;
 
 5)
+
+echo "VLESS Account Status Control"
+
+read -p "Enter UUID: " statusuuid
+
+
+if grep -Fq "$statusuuid" "$VLESS_DB"
+then
+
+current_status=$(grep "$statusuuid" "$VLESS_DB" | cut -d"|" -f4)
+
+
+if [ "$current_status" = "ACTIVE" ]
+then
+
+sed -i "\|$statusuuid|s|ACTIVE|DISABLED|" "$VLESS_DB"
+
+echo "⚠️ Account Disabled"
+
+else
+
+sed -i "\|$statusuuid|s|DISABLED|ACTIVE|" "$VLESS_DB"
+
+echo "✅ Account Enabled"
+
+fi
+
+
+else
+
+echo "❌ UUID Not Found"
+
+fi
+
+sleep 3
+
+;;
+
+6)
 
 break
 
