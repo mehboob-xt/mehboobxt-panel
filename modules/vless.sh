@@ -5,6 +5,14 @@
 # Module Version: 1.0.0
 # =====================================
 
+generate_uuid(){
+
+uuid=$(generate_uuid)
+
+echo "UUID: $uuid"
+
+}
+
 vless_menu(){
 
 while true
