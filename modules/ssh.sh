@@ -35,6 +35,12 @@ case $sshopt in
 
 read -p "Username: " user
 read -p "Password: " pass
+if [ -z "$user" ] || [ -z "$pass" ]
+then
+    error "Username and Password required"
+    sleep 2
+    continue
+fi
 
 if id "$user" >/dev/null 2>&1
 then
