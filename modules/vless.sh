@@ -10,6 +10,12 @@ VLESS_DB="/etc/mehboobxt/vless_accounts.db"
 PANEL_DIR="/etc/mehboobxt"
 LOG_FILE="$PANEL_DIR/panel.log"
 BACKUP_DIR="$PANEL_DIR/backups"
+CONFIG_FILE="/etc/mehboobxt/panel.conf"
+
+if [ -f "$CONFIG_FILE" ]
+then
+source "$CONFIG_FILE"
+fi
 
 
 generate_uuid(){
@@ -49,9 +55,7 @@ generate_vless_link(){
 uuid=$1
 name=$2
 
-DOMAIN="tech.mehboobxt.ggff.net"
-PORT="443"
-PATH="/vless"
+PATH="$WS_PATH"
 
 LINK="vless://$uuid@$DOMAIN:$PORT?type=ws&security=tls&host=$DOMAIN&path=$PATH&sni=$DOMAIN#$name"
 
