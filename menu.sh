@@ -1,5 +1,12 @@
 #!/bin/bash
 
+CORE="/opt/mehboobxt/core/core.sh"
+
+if [ -f "$CORE" ]
+then
+source "$CORE"
+fi
+
 # =====================================
 # MehboobXT Panel Main Menu
 # Version: 1.0.0
