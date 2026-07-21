@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# =====================================
+# MehboobXT VLESS Manager
+# Module Version: 1.0.0
+# =====================================
+
 vless_menu(){
 
 while true
