@@ -70,9 +70,8 @@ cp -rf temp/core/* /opt/mehboobxt/core/
 mkdir -p /opt/mehboobxt/modules
 cp -rf temp/modules/* /opt/mehboobxt/modules/
 
-cp -rf temp/config /opt/mehboobxt/
-cp temp/version /opt/mehboobxt/ 2>/dev/null
-
+[ -d temp/config ] && cp -rf temp/config /opt/mehboobxt/
+[ -f temp/version ] && cp temp/version /opt/mehboobxt/
 echo "⚙️ Installing Core Files..."
 
 chmod +x /opt/mehboobxt/core/*.sh
@@ -109,5 +108,11 @@ echo ""
 echo "======================================"
 echo " ✅ MehboobXT Panel Installed"
 echo " Location: /opt/mehboobxt"
-echo " Version: 1.0.0"
+if [ -f /opt/mehboobxt/version ]; then
+    VERSION=$(cat /opt/mehboobxt/version)
+else
+    VERSION="Unknown"
+fi
+
+echo " Version: $VERSION"
 echo "======================================"
