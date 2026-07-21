@@ -1,5 +1,9 @@
 #!/bin/bash
+
+source core/functions.sh
+
 clear
+
 source modules/ssh.sh
 source modules/vless.sh
 source modules/vmess.sh
