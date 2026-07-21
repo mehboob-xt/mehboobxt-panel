@@ -40,17 +40,31 @@ show_vless_info(){
 name=$1
 uuid=$2
 expiry=$3
+status=$4
+created=$5
 
 echo ""
 echo "=========================="
 echo "🔐 MehboobXT VLESS Account"
 echo "=========================="
 echo ""
-echo "Name   : $name"
-echo "UUID   : $uuid"
-echo "Expiry : $expiry"
-echo ""
-echo "Status : ACTIVE"
+echo "Name      : $name"
+echo "UUID      : $uuid"
+echo "Created   : $created"
+echo "Expiry    : $expiry"
+
+today=$(date +%s)
+expire_sec=$(date -d "$expiry" +%s)
+
+remaining=$(( (expire_sec - today) / 86400 ))
+
+if [ "$remaining" -lt 0 ]
+then
+remaining=0
+fi
+
+echo "Remaining : $remaining Days"
+echo "Status    : $status"
 echo ""
 echo "=========================="
 
@@ -114,7 +128,7 @@ echo "$name|$uuid|$expiry|ACTIVE|$created" >> "$VLESS_DB"
 
 echo ""
 echo "✅ VLESS Account Saved"
-show_vless_info "$name" "$uuid" "$expiry"
+show_vless_info "$name" "$uuid" "$expiry" "ACTIVE" "$created"
 generate_vless_link "$uuid" "$name"
 
 sleep 3
@@ -149,7 +163,7 @@ else
 status="EXPIRED"
 fi
 
-echo "Status : $status"
+echo "Status    : $status"
 
 done < "$VLESS_DB"
 
