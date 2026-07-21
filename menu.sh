@@ -27,7 +27,8 @@ echo "=============================="
 echo "1. VLESS Manager"
 echo "2. System Info"
 echo "3. Backup"
-echo "4. Exit"
+echo "4. Update Panel"
+echo "5. Exit"
 
 echo ""
 
@@ -83,6 +84,24 @@ sleep 3
 ;;
 
 4)
+
+if [ -f "$MODULE_DIR/update.sh" ]
+then
+
+source "$MODULE_DIR/update.sh"
+update_panel
+
+else
+
+echo "❌ Update Module Missing"
+
+sleep 2
+
+fi
+
+;;
+
+5)
 
 echo "Bye 👋"
 exit
