@@ -17,6 +17,24 @@ generate_uuid(){
 
 show_vless_info(){
 
+generate_vless_link(){
+
+uuid=$1
+name=$2
+
+DOMAIN="your-domain.com"
+PORT="443"
+
+LINK="vless://$uuid@$DOMAIN:$PORT?type=ws&security=tls#${name}"
+
+echo ""
+echo "🔗 VLESS LINK"
+echo "--------------------------"
+echo "$LINK"
+echo "--------------------------"
+
+}
+
 name=$1
 uuid=$2
 expiry=$3
@@ -91,6 +109,7 @@ echo "$name|$uuid|$expiry" >> "$VLESS_DB"
 echo ""
 echo "✅ VLESS Account Saved"
 show_vless_info "$name" "$uuid" "$expiry"
+generate_vless_link "$uuid" "$name"
 
 sleep 3
 
