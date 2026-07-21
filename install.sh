@@ -75,6 +75,11 @@ if [ ! -f temp/menu.sh ]; then
     exit 1
 fi
 
+if [ ! -d temp/core ] || [ ! -d temp/modules ]; then
+    echo "❌ Core files missing."
+    exit 1
+fi
+
 cp temp/menu.sh .
 mkdir -p /opt/mehboobxt/core
 cp -rf temp/core/* /opt/mehboobxt/core/
