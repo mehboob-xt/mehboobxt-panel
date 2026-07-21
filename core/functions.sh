@@ -82,3 +82,14 @@ user_exists() {
     id "$1" >/dev/null 2>&1
 
 }
+# Load Module Helper
+load_module() {
+
+    if [ -f "$1" ]
+    then
+        source "$1"
+    else
+        error "Module missing: $1"
+    fi
+
+}
