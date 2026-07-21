@@ -48,3 +48,5 @@ panel_version(){
 echo "MehboobXT Panel Version 1.0.0"
 
 }
+
+create_dirs
