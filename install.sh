@@ -48,8 +48,15 @@ mkdir -p /opt/mehboobxt
 mkdir -p /opt/mehboobxt/core
 mkdir -p /opt/mehboobxt/modules
 mkdir -p /opt/mehboobxt/webpanel
-# Download Panel Files
 
+# Database Directory
+mkdir -p /opt/mehboobxt/database
+
+touch /opt/mehboobxt/database/accounts.db
+touch /opt/mehboobxt/database/users.json
+touch /opt/mehboobxt/database/expiry.db
+
+# Download Panel Files
 echo "📦 Downloading MehboobXT Panel files..."
 
 cd /opt/mehboobxt
