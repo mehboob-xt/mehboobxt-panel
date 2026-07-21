@@ -15,6 +15,26 @@ generate_uuid(){
 
 }
 
+show_vless_info(){
+
+name=$1
+uuid=$2
+expiry=$3
+
+echo ""
+echo "=========================="
+echo "🔐 MehboobXT VLESS Account"
+echo "=========================="
+echo ""
+echo "Name   : $name"
+echo "UUID   : $uuid"
+echo "Expiry : $expiry"
+echo ""
+echo "Status : ACTIVE"
+echo ""
+echo "=========================="
+
+}
 
 vless_menu(){
 
@@ -70,6 +90,7 @@ echo "$name|$uuid|$expiry" >> "$VLESS_DB"
 
 echo ""
 echo "✅ VLESS Account Saved"
+show_vless_info "$name" "$uuid" "$expiry"
 
 sleep 3
 
