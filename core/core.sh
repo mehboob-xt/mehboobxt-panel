@@ -17,19 +17,15 @@ mkdir -p "$PANEL_DIR/backups"
 }
 
 
-log_message(){
-
-echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
-
+log_message() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
-panel_log(){
-
-echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
-
+panel_log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
-check_root(){
+check_root() {
 
 if [ "$EUID" -ne 0 ]
 then
