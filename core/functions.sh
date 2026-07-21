@@ -56,3 +56,29 @@ check_root() {
 pause() {
     read -p "Press Enter to continue..."
 }
+# Check Command Exists
+check_command() {
+
+    command -v "$1" >/dev/null 2>&1
+
+}
+
+
+# Install Package Helper
+install_package() {
+
+    if ! check_command "$1"
+    then
+        apt update -y
+        apt install "$1" -y
+    fi
+
+}
+
+
+# Check User Exists
+user_exists() {
+
+    id "$1" >/dev/null 2>&1
+
+}
