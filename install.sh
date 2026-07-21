@@ -64,11 +64,8 @@ mkdir -p /opt/mehboobxt/modules
 cp -rf temp/modules/* /opt/mehboobxt/modules/
 echo "⚙️ Installing Core Files..."
 
-mkdir -p /opt/mehboobxt/core
-
-cp -r core/* /opt/mehboobxt/core/
-
 chmod +x /opt/mehboobxt/core/*.sh
+chmod +x /opt/mehboobxt/modules/*.sh
 
 echo "✅ Core Installed"
 echo "✅ Core System Installed"
