@@ -80,7 +80,16 @@ sleep 2
 
 3)
 echo "SSH Users:"
-cat /etc/passwd | grep "/home" | cut -d: -f1
+echo "----------------------"
+
+for user in $(cat /etc/passwd | grep "/home" | cut -d: -f1)
+do
+    expire=$(chage -l "$user" | grep "Account expires" | cut -d: -f2)
+
+    echo "User: $user"
+    echo "Expiry:$expire"
+    echo "----------------------"
+done
 sleep 3
 ;;
 
