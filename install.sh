@@ -68,7 +68,6 @@ if [ $? -ne 0 ]; then
 fi
 
 cp temp/menu.sh .
-cp temp/install.sh .
 mkdir -p /opt/mehboobxt/core
 cp -rf temp/core/* /opt/mehboobxt/core/
 mkdir -p /opt/mehboobxt/modules
