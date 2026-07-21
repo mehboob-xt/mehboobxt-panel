@@ -60,6 +60,15 @@ cp temp/menu.sh .
 cp temp/install.sh .
 cp -r temp/core/* core/
 cp -r temp/modules/* modules/
+echo "⚙️ Installing Core Files..."
+
+mkdir -p /opt/mehboobxt/core
+
+cp -r core/* /opt/mehboobxt/core/
+
+chmod +x /opt/mehboobxt/core/*.sh
+
+echo "✅ Core Installed"
 
 rm -rf temp
 
