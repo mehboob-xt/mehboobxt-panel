@@ -1,5 +1,4 @@
 #!/bin/bash
-source modules/ssh.sh
 clear
 source modules/ssh.sh
 source modules/vless.sh
