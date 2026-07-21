@@ -15,10 +15,10 @@ source modules/update.sh
 
 check_root
 
-panel_header
-
 while true
 do
+
+panel_header
 
 echo -e "${CYAN}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
