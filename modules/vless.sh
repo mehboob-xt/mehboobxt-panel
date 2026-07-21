@@ -84,7 +84,27 @@ echo "--------------------------"
 if [ -f "$VLESS_DB" ]
 then
 
-cat "$VLESS_DB"
+while IFS="|" read -r name uuid expiry
+do
+
+echo "--------------------------"
+echo "Name   : $name"
+echo "UUID   : $uuid"
+echo "Expiry : $expiry"
+
+today=$(date +%s)
+expire_sec=$(date -d "$expiry" +%s)
+
+if [ "$expire_sec" -gt "$today" ]
+then
+status="ACTIVE"
+else
+status="EXPIRED"
+fi
+
+echo "Status : $status"
+
+done < "$VLESS_DB"
 
 else
 
