@@ -101,6 +101,17 @@ do
 
     echo "User: $user"
     echo "Expiry:$expire"
+    today=$(date +%s)
+expire_sec=$(date -d "$expire" +%s)
+
+if [ "$expire_sec" -gt "$today" ]
+then
+    status="ACTIVE"
+else
+    status="EXPIRED"
+fi
+
+echo "Status: $status"
     echo "----------------------"
 done
 sleep 3
