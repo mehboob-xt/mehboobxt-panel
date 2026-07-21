@@ -69,12 +69,14 @@ cp -r core/* /opt/mehboobxt/core/
 chmod +x /opt/mehboobxt/core/*.sh
 
 echo "✅ Core Installed"
+echo "✅ Core System Installed"
 
 rm -rf temp
 
 chmod +x menu.sh
 chmod +x core/*.sh
 chmod +x modules/*.sh
+chmod +x core/core.sh
 
 echo "✅ Panel files installed"
 # Version File
