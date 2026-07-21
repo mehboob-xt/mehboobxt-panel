@@ -89,6 +89,13 @@ echo "Delete VLESS Account"
 
 read -p "Enter UUID: " deluuid
 
+if [ -z "$deluuid" ]
+then
+echo "❌ UUID Required"
+sleep 2
+continue
+fi
+
 
 if [ -f "$VLESS_DB" ]
 then
