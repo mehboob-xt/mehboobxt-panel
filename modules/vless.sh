@@ -177,14 +177,14 @@ echo "--------------------------"
 if [ -f "$VLESS_DB" ]
 then
 
-while IFS="|" read -r name uuid expiry status created
-
+while IFS="|" read -r name uuid expiry status created note
 echo "--------------------------"
 echo "Name   : $name"
 echo "UUID   : $uuid"
 echo "Expiry : $expiry"
 echo "Created : $created"
 echo "Status  : $status"
+echo "Note    : $note"
 
 today=$(date +%s)
 expire_sec=$(date -d "$expiry" +%s)
@@ -195,6 +195,8 @@ status="ACTIVE"
 else
 status="EXPIRED"
 fi
+
+echo "Updated Status : $status"
 
 echo "Status    : $status"
 
