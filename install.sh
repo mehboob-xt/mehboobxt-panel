@@ -62,6 +62,10 @@ echo "📦 Downloading MehboobXT Panel files..."
 cd /opt/mehboobxt
 
 git clone https://github.com/mehboob-xt/mehboobxt-panel.git temp
+if [ $? -ne 0 ]; then
+    echo "❌ Failed to download panel files."
+    exit 1
+fi
 
 cp temp/menu.sh .
 cp temp/install.sh .
@@ -108,10 +112,11 @@ echo ""
 echo "======================================"
 echo " ✅ MehboobXT Panel Installed"
 echo " Location: /opt/mehboobxt"
+
+VERSION="Unknown"
+
 if [ -f /opt/mehboobxt/version ]; then
     VERSION=$(cat /opt/mehboobxt/version)
-else
-    VERSION="Unknown"
 fi
 
 echo " Version: $VERSION"
