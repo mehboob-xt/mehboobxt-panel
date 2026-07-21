@@ -1,5 +1,11 @@
 #!/bin/bash
 
+CORE="/opt/mehboobxt/core/core.sh"
+
+if [ -f "$CORE" ]
+then
+source "$CORE"
+fi
 # =====================================
 # MehboobXT VLESS Manager
 # Module Version: 1.0.0
@@ -21,11 +27,6 @@ fi
 generate_uuid(){
 
     cat /proc/sys/kernel/random/uuid
-
-}
-panel_log(){
-
-echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 
 }
 
@@ -103,8 +104,7 @@ echo "=========================="
 }
 
 vless_menu(){
-
-mkdir -p /etc/mehboobxt
+create_dirs
 
 
 while true
