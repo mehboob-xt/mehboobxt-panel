@@ -58,8 +58,10 @@ git clone https://github.com/mehboob-xt/mehboobxt-panel.git temp
 
 cp temp/menu.sh .
 cp temp/install.sh .
-cp -r temp/core/* core/
-cp -r temp/modules/* modules/
+mkdir -p /opt/mehboobxt/core
+cp -rf temp/core/* /opt/mehboobxt/core/
+mkdir -p /opt/mehboobxt/modules
+cp -rf temp/modules/* /opt/mehboobxt/modules/
 echo "⚙️ Installing Core Files..."
 
 mkdir -p /opt/mehboobxt/core
