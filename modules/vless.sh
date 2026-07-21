@@ -106,7 +106,9 @@ echo ""
 echo "UUID: $uuid"
 echo "Expiry: $expiry"
 
-echo "$name|$uuid|$expiry" >> "$VLESS_DB"
+created=$(date +%Y-%m-%d)
+
+echo "$name|$uuid|$expiry|ACTIVE|$created" >> "$VLESS_DB"
 
 echo ""
 echo "✅ VLESS Account Saved"
@@ -126,13 +128,14 @@ echo "--------------------------"
 if [ -f "$VLESS_DB" ]
 then
 
-while IFS="|" read -r name uuid expiry
-do
+while IFS="|" read -r name uuid expiry status created
 
 echo "--------------------------"
 echo "Name   : $name"
 echo "UUID   : $uuid"
 echo "Expiry : $expiry"
+echo "Created : $created"
+echo "Status  : $status"
 
 today=$(date +%s)
 expire_sec=$(date -d "$expiry" +%s)
