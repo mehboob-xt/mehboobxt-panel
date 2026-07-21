@@ -24,6 +24,7 @@ echo "✅ Root access confirmed"
 echo "📦 Updating system packages..."
 apt update -y
 apt upgrade -y
+apt install -y ca-certificates
 
 # Required Packages
 echo "📦 Installing required packages..."
@@ -90,7 +91,7 @@ rm -rf temp
 chmod +x menu.sh
 chmod +x core/*.sh
 chmod +x modules/*.sh
-chmod +x core/core.sh
+[ -f core/core.sh ] && chmod +x core/core.sh
 
 echo "✅ Panel files installed"
 # Version File
