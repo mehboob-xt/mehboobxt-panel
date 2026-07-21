@@ -32,7 +32,7 @@ then
 
 expire_date=$(date -d "+$days days" +"%Y-%m-%d")
 
-chage -E $(date -d "$expire_date" +%s) "$user"
+chage -E $(date -d "$expire_date" +%d) "$user"
 
 echo "✅ Expiry Set"
 echo "User: $user"
