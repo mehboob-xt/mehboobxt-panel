@@ -1,6 +1,15 @@
 #!/bin/bash
+# =====================================
+# MehboobXT SSH Manager
+# Module Version: 1.0.0
+# =====================================
 
 ssh_menu(){
+
+if ! check_command useradd
+then
+    install_package passwd
+fi
 
 while true
 do
