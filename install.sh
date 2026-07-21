@@ -63,10 +63,17 @@ echo "📦 Downloading MehboobXT Panel files..."
 cd /opt/mehboobxt
 rm -rf temp
 
-git clone https://github.com/mehboob-xt/mehboobxt-panel.git temp
+rm -rf temp
+
+git clone --depth 1 https://github.com/mehboob-xt/mehboobxt-panel.git temp
 
 if [ $? -ne 0 ]; then
     echo "❌ Failed to download panel files."
+    exit 1
+fi
+
+if [ ! -f temp/menu.sh ]; then
+    echo "❌ menu.sh not found."
     exit 1
 fi
 
