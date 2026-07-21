@@ -33,7 +33,7 @@ then
 else
     useradd -m "$user"
     echo "$user:$pass" | chpasswd
-    echo "✅ SSH User Created: $user"
+    success "SSH User Created" $user"
 fi
 
 sleep 2
