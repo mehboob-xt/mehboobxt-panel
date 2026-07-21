@@ -21,7 +21,7 @@ generate_vless_link(){
 uuid=$1
 name=$2
 
-DOMAIN="your-domain.com"
+DOMAIN="tech.mehboobxt.ggff.net"
 PORT="443"
 
 LINK="vless://$uuid@$DOMAIN:$PORT?type=ws&security=tls#${name}"
