@@ -2,16 +2,16 @@
 
 source core/functions.sh
 
-source modules/ssh.sh
-source modules/vless.sh
-source modules/vmess.sh
-source modules/trojan.sh
-source modules/expiry.sh
-source modules/referral.sh
-source modules/account_generator.sh
-source modules/backup.sh
-source modules/vps_info.sh
-source modules/update.sh
+load_module modules/ssh.sh
+load_module modules/vless.sh
+load_module modules/vmess.sh
+load_module modules/trojan.sh
+load_module modules/expiry.sh
+load_module modules/referral.sh
+load_module modules/account_generator.sh
+load_module modules/backup.sh
+load_module modules/vps_info.sh
+load_module modules/update.sh
 
 check_root
 
