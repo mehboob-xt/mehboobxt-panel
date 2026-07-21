@@ -90,16 +90,25 @@ echo "Delete VLESS Account"
 read -p "Enter UUID: " deluuid
 
 
-if grep -q "$deluuid" "$VLESS_DB"
+if [ -f "$VLESS_DB" ]
 then
 
-sed -i "/$deluuid/d" "$VLESS_DB"
+if grep -Fq "$deluuid" "$VLESS_DB"
+then
+
+sed -i "\|$deluuid|d" "$VLESS_DB"
 
 echo "✅ Account Deleted"
 
 else
 
 echo "❌ UUID Not Found"
+
+fi
+
+else
+
+echo "❌ No Database Found"
 
 fi
 
