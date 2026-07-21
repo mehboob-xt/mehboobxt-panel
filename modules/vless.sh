@@ -73,7 +73,8 @@ echo "=========================="
 echo "1. Create VLESS Account"
 echo "2. List VLESS Account"
 echo "3. Delete VLESS Account"
-echo "4. Back"
+echo "4. Edit VLESS Account"
+echo "5. Back"
 
 echo ""
 
@@ -202,8 +203,36 @@ sleep 3
 
 ;;
 
-
 4)
+
+echo "Edit VLESS Account"
+
+read -p "Enter UUID: " edituuid
+
+if grep -Fq "$edituuid" "$VLESS_DB"
+then
+
+read -p "New Name: " newname
+read -p "New Expiry Days: " days
+
+newexpiry=$(date -d "+$days days" +"%Y-%m-%d")
+created=$(date +%Y-%m-%d)
+
+sed -i "\|$edituuid|c\\$newname|$edituuid|$newexpiry|ACTIVE|$created" "$VLESS_DB"
+
+echo "✅ Account Updated"
+
+else
+
+echo "❌ UUID Not Found"
+
+fi
+
+sleep 3
+
+;;
+
+5)
 
 break
 
