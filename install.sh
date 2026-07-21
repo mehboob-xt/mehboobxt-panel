@@ -60,8 +60,10 @@ touch /opt/mehboobxt/database/expiry.db
 echo "📦 Downloading MehboobXT Panel files..."
 
 cd /opt/mehboobxt
+rm -rf temp
 
 git clone https://github.com/mehboob-xt/mehboobxt-panel.git temp
+
 if [ $? -ne 0 ]; then
     echo "❌ Failed to download panel files."
     exit 1
