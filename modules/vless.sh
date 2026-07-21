@@ -5,15 +5,21 @@
 # Module Version: 1.0.0
 # =====================================
 
+
+VLESS_DB="/etc/mehboobxt/vless_accounts.db"
+
+
 generate_uuid(){
 
-uuid=$(generate_uuid)
-
-echo "UUID: $uuid"
+    cat /proc/sys/kernel/random/uuid
 
 }
 
+
 vless_menu(){
+
+mkdir -p /etc/mehboobxt
+
 
 while true
 do
@@ -33,37 +39,93 @@ echo ""
 
 read -p "Select Option: " vlessopt
 
+
 case $vlessopt in
 
+
 1)
+
 echo "Creating VLESS Account..."
+
 uuid=$(generate_uuid)
 
+echo ""
 echo "UUID: $uuid"
+
+echo "$uuid|$(date +%Y-%m-%d)" >> "$VLESS_DB"
+
+echo ""
+echo "✅ VLESS Account Saved"
+
 sleep 3
+
 ;;
+
 
 2)
+
 echo "VLESS Account List"
+echo "--------------------------"
+
+if [ -f "$VLESS_DB" ]
+then
+
+cat "$VLESS_DB"
+
+else
+
 echo "No account yet"
+
+fi
+
 sleep 3
+
 ;;
+
 
 3)
+
 echo "Delete VLESS Account"
+
+read -p "Enter UUID: " deluuid
+
+
+if grep -q "$deluuid" "$VLESS_DB"
+then
+
+sed -i "/$deluuid/d" "$VLESS_DB"
+
+echo "✅ Account Deleted"
+
+else
+
+echo "❌ UUID Not Found"
+
+fi
+
+
 sleep 3
+
 ;;
+
 
 4)
+
 break
+
 ;;
 
+
 *)
+
 echo "Invalid Option"
+
 sleep 2
+
 ;;
 
 esac
+
 
 done
 
