@@ -2,8 +2,6 @@
 
 source core/functions.sh
 
-clear
-
 source modules/ssh.sh
 source modules/vless.sh
 source modules/vmess.sh
@@ -15,10 +13,9 @@ source modules/backup.sh
 source modules/vps_info.sh
 source modules/update.sh
 
-GREEN="\033[0;32m"
-CYAN="\033[0;36m"
-YELLOW="\033[1;33m"
-RESET="\033[0m"
+check_root
+
+panel_header
 
 while true
 do
