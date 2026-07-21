@@ -32,6 +32,18 @@ apt install -y curl wget git nano unzip jq
 # Create Directory
 echo "📁 Creating MehboobXT directories..."
 
+echo "⚙️ Creating Panel Configuration..."
+
+mkdir -p /etc/mehboobxt
+
+cat > /etc/mehboobxt/panel.conf <<EOF
+DOMAIN="tech.mehboobxt.ggff.net"
+PORT="443"
+WS_PATH="/vless"
+EOF
+
+echo "✅ Configuration Created"
+
 mkdir -p /opt/mehboobxt
 mkdir -p /opt/mehboobxt/core
 mkdir -p /opt/mehboobxt/modules
