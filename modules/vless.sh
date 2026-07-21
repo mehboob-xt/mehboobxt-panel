@@ -47,12 +47,26 @@ case $vlessopt in
 
 echo "Creating VLESS Account..."
 
+read -p "Account Name: " name
+
+if [ -z "$name" ]
+then
+echo "❌ Name Required"
+sleep 2
+continue
+fi
+
 uuid=$(generate_uuid)
+
+read -p "Expiry Days: " days
+
+expiry=$(date -d "+$days days" +"%Y-%m-%d")
 
 echo ""
 echo "UUID: $uuid"
+echo "Expiry: $expiry"
 
-echo "$uuid|$(date +%Y-%m-%d)" >> "$VLESS_DB"
+echo "$name|$uuid|$expiry" >> "$VLESS_DB"
 
 echo ""
 echo "✅ VLESS Account Saved"
