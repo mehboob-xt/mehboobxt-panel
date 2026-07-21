@@ -40,9 +40,12 @@ if id "$user" >/dev/null 2>&1
 then
     echo "❌ User already exists"
 else
-    useradd -m "$user"
-    echo "$user:$pass" | chpasswd
-    success "SSH User Created" $user"
+    useradd -m -s /bin/bash "$user"
+echo "$user:$pass" | chpasswd
+
+success "SSH User Created"
+echo "Username: $user"
+echo "Shell: /bin/bash"
 fi
 
 sleep 2
