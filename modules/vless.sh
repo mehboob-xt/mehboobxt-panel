@@ -37,7 +37,8 @@ case $vlessopt in
 
 1)
 echo "Creating VLESS Account..."
-uuid=$(cat /proc/sys/kernel/random/uuid)
+uuid=$(generate_uuid)
+
 echo "UUID: $uuid"
 sleep 3
 ;;
