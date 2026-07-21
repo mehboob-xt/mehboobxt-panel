@@ -26,10 +26,6 @@ apt update -y
 apt upgrade -y
 apt install -y ca-certificates curl wget git nano unzip jq
 
-# Required Packages
-echo "📦 Installing required packages..."
-apt install -y curl wget git nano unzip jq
-
 # Create Directory
 echo "📁 Creating MehboobXT directories..."
 
