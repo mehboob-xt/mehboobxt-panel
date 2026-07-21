@@ -23,8 +23,9 @@ name=$2
 
 DOMAIN="tech.mehboobxt.ggff.net"
 PORT="443"
+PATH="/vless"
 
-LINK="vless://$uuid@$DOMAIN:$PORT?type=ws&security=tls#${name}"
+LINK="vless://$uuid@$DOMAIN:$PORT?type=ws&security=tls&host=$DOMAIN&path=$PATH&sni=$DOMAIN#$name"
 
 echo ""
 echo "🔗 VLESS LINK"
