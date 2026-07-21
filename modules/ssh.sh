@@ -67,12 +67,25 @@ sleep 2
 
 read -p "Username to delete: " deluser
 
-if id "$deluser" >/dev/null 2>&1
+if [ "$deluser" = "root" ]
 then
-    userdel -r "$deluser"
-    echo "✅ User Removed: $deluser"
+
+    error "Cannot delete root user"
+
 else
-    echo "❌ User Not Found"
+
+    if id "$deluser" >/dev/null 2>&1
+    then
+
+        userdel -r "$deluser"
+        success "User Removed: $deluser"
+
+    else
+
+        error "User Not Found"
+
+    fi
+
 fi
 
 sleep 2
