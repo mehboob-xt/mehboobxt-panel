@@ -6,6 +6,9 @@ if [ -f "$CORE" ]
 then
 source "$CORE"
 fi
+echo "Loading Core..."
+source "$CORE"
+type panel_log
 # =====================================
 # MehboobXT VLESS Manager
 # Module Version: 1.0.0
