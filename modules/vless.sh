@@ -7,6 +7,8 @@
 
 
 VLESS_DB="/etc/mehboobxt/vless_accounts.db"
+PANEL_DIR="/etc/mehboobxt"
+LOG_FILE="$PANEL_DIR/panel.log"
 
 
 generate_uuid(){
@@ -14,7 +16,11 @@ generate_uuid(){
     cat /proc/sys/kernel/random/uuid
 
 }
+panel_log(){
 
+echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+
+}
 
 generate_vless_link(){
 
@@ -125,6 +131,7 @@ echo "Expiry: $expiry"
 created=$(date +%Y-%m-%d)
 
 echo "$name|$uuid|$expiry|ACTIVE|$created" >> "$VLESS_DB"
+panel_log "VLESS Account Created: $name"
 
 echo ""
 echo "✅ VLESS Account Saved"
