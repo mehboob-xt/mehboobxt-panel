@@ -69,6 +69,10 @@ mkdir -p /opt/mehboobxt/core
 cp -rf temp/core/* /opt/mehboobxt/core/
 mkdir -p /opt/mehboobxt/modules
 cp -rf temp/modules/* /opt/mehboobxt/modules/
+
+cp -rf temp/config /opt/mehboobxt/
+cp temp/version /opt/mehboobxt/ 2>/dev/null
+
 echo "⚙️ Installing Core Files..."
 
 chmod +x /opt/mehboobxt/core/*.sh
@@ -87,7 +91,7 @@ chmod +x core/core.sh
 echo "✅ Panel files installed"
 # Version File
 
-echo "1.0.0" > /opt/mehboobxt/version
+
 # Create Panel Command
 
 echo "🔗 Creating mehboobxt command..."
