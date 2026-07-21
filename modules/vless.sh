@@ -15,7 +15,6 @@ generate_uuid(){
 
 }
 
-show_vless_info(){
 
 generate_vless_link(){
 
