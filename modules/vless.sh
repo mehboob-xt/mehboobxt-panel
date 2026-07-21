@@ -178,6 +178,8 @@ if [ -f "$VLESS_DB" ]
 then
 
 while IFS="|" read -r name uuid expiry status created note
+do
+
 echo "--------------------------"
 echo "Name   : $name"
 echo "UUID   : $uuid"
