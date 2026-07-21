@@ -35,6 +35,14 @@ case $sshopt in
 
 read -p "Username: " user
 read -p "Password: " pass
+
+if [[ ! "$user" =~ ^[a-zA-Z0-9_]+$ ]]
+then
+    error "Invalid username format"
+    sleep 2
+    continue
+fi
+
 if [ -z "$user" ] || [ -z "$pass" ]
 then
     error "Username and Password required"
