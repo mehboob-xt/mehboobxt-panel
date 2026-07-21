@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 # ==========================================
 # MehboobXT Panel Installer
 # Version: 1.0.0
@@ -24,7 +24,7 @@ echo "✅ Root access confirmed"
 echo "📦 Updating system packages..."
 apt update -y
 apt upgrade -y
-apt install -y ca-certificates
+apt install -y ca-certificates curl wget git nano unzip jq
 
 # Required Packages
 echo "📦 Installing required packages..."
