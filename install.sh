@@ -63,8 +63,6 @@ echo "📦 Downloading MehboobXT Panel files..."
 cd /opt/mehboobxt
 rm -rf temp
 
-rm -rf temp
-
 git clone --depth 1 https://github.com/mehboob-xt/mehboobxt-panel.git temp
 
 if [ $? -ne 0 ]; then
