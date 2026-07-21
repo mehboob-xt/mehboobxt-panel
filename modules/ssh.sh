@@ -40,12 +40,24 @@ if id "$user" >/dev/null 2>&1
 then
     echo "❌ User already exists"
 else
-    useradd -m -s /bin/bash "$user"
+
+useradd -m -s /bin/bash "$user"
 echo "$user:$pass" | chpasswd
 
 success "SSH User Created"
 echo "Username: $user"
 echo "Shell: /bin/bash"
+
+echo ""
+
+read -p "Account Days: " days
+
+expire_date=$(date -d "+$days days" +"%Y-%m-%d")
+
+chage -E $(date -d "$expire_date" +%s) "$user"
+
+success "Expiry Set: $expire_date"
+
 fi
 
 sleep 2
