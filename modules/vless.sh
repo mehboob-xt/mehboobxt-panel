@@ -145,6 +145,8 @@ uuid=$(generate_uuid)
 
 read -p "Expiry Days: " days
 
+read -p "Account Note: " note
+
 expiry=$(date -d "+$days days" +"%Y-%m-%d")
 
 echo ""
@@ -153,8 +155,9 @@ echo "Expiry: $expiry"
 
 created=$(date +%Y-%m-%d)
 
-echo "$name|$uuid|$expiry|ACTIVE|$created" >> "$VLESS_DB"
+echo "$name|$uuid|$expiry|ACTIVE|$created|$note" >> "$VLESS_DB"
 panel_log "VLESS Account Created: $name"
+backup_vless_db
 
 echo ""
 echo "✅ VLESS Account Saved"
@@ -230,6 +233,10 @@ then
 
 sed -i "\|$deluuid|d" "$VLESS_DB"
 
+backup_vless_db
+
+panel_log "VLESS Account Deleted: $deluuid"
+
 echo "✅ Account Deleted"
 
 else
@@ -265,6 +272,8 @@ created=$(date +%Y-%m-%d)
 
 sed -i "\|$edituuid|c\\$newname|$edituuid|$newexpiry|ACTIVE|$created" "$VLESS_DB"
 
+backup_vless_db
+
 echo "✅ Account Updated"
 
 else
@@ -295,11 +304,15 @@ then
 
 sed -i "\|$statusuuid|s|ACTIVE|DISABLED|" "$VLESS_DB"
 
+backup_vless_db
+
 echo "⚠️ Account Disabled"
 
 else
 
 sed -i "\|$statusuuid|s|DISABLED|ACTIVE|" "$VLESS_DB"
+
+backup_vless_db
 
 echo "✅ Account Enabled"
 
