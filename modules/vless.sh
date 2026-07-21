@@ -9,6 +9,7 @@
 VLESS_DB="/etc/mehboobxt/vless_accounts.db"
 PANEL_DIR="/etc/mehboobxt"
 LOG_FILE="$PANEL_DIR/panel.log"
+BACKUP_DIR="$PANEL_DIR/backups"
 
 
 generate_uuid(){
@@ -19,6 +20,27 @@ generate_uuid(){
 panel_log(){
 
 echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
+
+}
+
+backup_vless_db(){
+
+mkdir -p "$BACKUP_DIR"
+
+if [ -f "$VLESS_DB" ]
+then
+
+cp "$VLESS_DB" "$BACKUP_DIR/vless_$(date +%Y-%m-%d_%H-%M-%S).db"
+
+panel_log "Database Backup Created"
+
+echo "✅ Backup Created"
+
+else
+
+echo "❌ Database Not Found"
+
+fi
 
 }
 
@@ -95,7 +117,8 @@ echo "2. List VLESS Account"
 echo "3. Delete VLESS Account"
 echo "4. Edit VLESS Account"
 echo "5. Enable/Disable Account"
-echo "6. Back"
+echo "6. Backup Database"
+echo "7. Back"
 
 echo ""
 
@@ -294,6 +317,14 @@ sleep 3
 ;;
 
 6)
+
+backup_vless_db
+
+sleep 3
+
+;;
+
+7)
 
 break
 
