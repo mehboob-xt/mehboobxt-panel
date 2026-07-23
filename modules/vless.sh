@@ -82,6 +82,12 @@ if [ "$days" -le 0 ]; then
 fi
 
 UUID=$(cat /proc/sys/kernel/random/uuid)
+DOMAIN="tech.mehboobxt.ggff.net"
+PORT="443"
+TYPE="ws"
+SECURITY="tls"
+PATH="/vless"
+SNI="$DOMAIN"
 
 DB="/etc/mehboobxt/vless_accounts.db"
 
@@ -103,7 +109,13 @@ success "VLESS User Created"
 echo ""
 echo "Username : $user"
 echo "UUID     : $UUID"
-echo "Expiry   : $(date -d "$days days" +%Y-%m-%d)"
+echo "Expiry   : $(date -d "$days days" +"%Y-%m-%d")"
+
+LINK="vless://$UUID@$DOMAIN:$PORT?type=$TYPE&security=$SECURITY&path=$PATH&sni=$SNI#$user"
+
+echo ""
+echo "VLESS Link:"
+echo "$LINK"
 
 pause
 
