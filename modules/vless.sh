@@ -199,6 +199,55 @@ echo "New Expiry : $NEW_EXPIRY"
     pause
 }
 
+copy_vless_link() {
+
+    header
+
+    echo "Copy VLESS Link"
+
+    DB="/etc/mehboobxt/vless_accounts.db"
+
+    DOMAIN="tech.mehboobxt.ggff.net"
+    PORT="443"
+    TYPE="ws"
+    SECURITY="tls"
+    PATH="/vless"
+    SNI="$DOMAIN"
+
+    read -rp "Username : " user
+
+    if [ ! -f "$DB" ]; then
+        error "Database not found"
+        pause
+        return
+    fi
+
+    DATA=$(grep "^$user|" "$DB")
+
+    if [ -z "$DATA" ]; then
+        error "User not found"
+        pause
+        return
+    fi
+
+    IFS="|" read -r USER UUID EXPIRY <<< "$DATA"
+
+    LINK="vless://$UUID@$DOMAIN:$PORT?type=$TYPE&security=$SECURITY&encryption=none&path=$PATH&sni=$SNI#$USER"
+
+    echo ""
+    success "VLESS Link Generated"
+    echo ""
+    echo "Username : $USER"
+    echo "Expiry   : $EXPIRY"
+    echo ""
+    echo "VLESS Link:"
+    echo "$LINK"
+    echo ""
+
+    pause
+}
+
+
 list_vless_users() {
 
 header
