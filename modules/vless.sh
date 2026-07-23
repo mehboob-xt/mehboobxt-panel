@@ -121,12 +121,15 @@ if [ ! -f "$DB" ]; then
     return
 fi
 
+if ! grep -q "^$user|" "$DB"; then
+    error "User not found"
+    pause
+    return
+fi
+
 grep -v "^$user|" "$DB" > /tmp/vless.tmp
 mv /tmp/vless.tmp "$DB"
 
 success "VLESS User Deleted"
 
 pause
-
-}
-
