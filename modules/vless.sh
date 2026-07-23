@@ -17,7 +17,8 @@ echo "5. Search VLESS User"
 echo "6. Export VLESS Config"
 echo "7. Renew VLESS User"
 echo "8. Delete VLESS User"
-echo "9. Back"
+echo "9. Backup VLESS Database"
+echo "10. Back"
 echo ""
 
 read -rp "Select Option : " option
@@ -54,6 +55,10 @@ delete_vless_user
 ;;
 
 9)
+backup_vless_db
+;;
+
+10)
 break
 ;;
 
@@ -427,6 +432,37 @@ success "VLESS User Deleted"
 
 pause
 
+}
+
+backup_vless_db() {
+
+    header
+
+    echo "Backup VLESS Database"
+
+    DB="/etc/mehboobxt/vless_accounts.db"
+    BACKUP_DIR="/etc/mehboobxt/backup"
+
+    mkdir -p "$BACKUP_DIR"
+
+    if [ ! -f "$DB" ]; then
+        error "Database not found"
+        pause
+        return
+    fi
+
+    FILE="$BACKUP_DIR/vless_backup_$(date +%Y%m%d_%H%M%S).db"
+
+    cp "$DB" "$FILE"
+
+    success "Backup Created"
+
+    echo ""
+    echo "Saved To:"
+    echo "$FILE"
+    echo ""
+
+    pause
 }
 
 export_vless_config() {
