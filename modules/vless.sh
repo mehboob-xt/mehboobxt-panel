@@ -12,8 +12,9 @@ echo ""
 echo "1. Create VLESS User"
 echo "2. List VLESS Users"
 echo "3. Show VLESS User"
-echo "4. Delete VLESS User"
-echo "5. Back"
+echo "4. Renew VLESS User"
+echo "5. Delete VLESS User"
+echo "6. Back"
 echo ""
 
 read -rp "Select Option : " option
@@ -33,10 +34,14 @@ show_vless_user
 ;;
 
 4)
-delete_vless_user
+renew_vless_user
 ;;
 
 5)
+delete_vless_user
+;;
+
+6)
 break
 ;;
 
