@@ -12,8 +12,6 @@ MODULE_DIR="$BASE_DIR/modules"
 while true
 do
 
-clear
-
 header
 
 echo "1. VLESS Manager"
