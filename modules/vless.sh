@@ -110,6 +110,17 @@ header
 
 echo "Delete VLESS User"
 
+DB="/etc/mehboobxt/vless_accounts.db"
+
+if [ ! -f "$DB" ]; then
+    error "Database not found"
+    pause
+    return
+fi
+
+grep -v "^$user|" "$DB" > /tmp/vless.tmp
+mv /tmp/vless.tmp "$DB"
+
 read -rp "Username : " user
 
 success "VLESS User Deleted"
