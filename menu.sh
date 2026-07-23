@@ -1,12 +1,6 @@
 #!/bin/bash
 
-CORE="/opt/mehboobxt/core/core.sh"
-
-if [ -f "$CORE" ]
-then
-source "$CORE"
-fi
-
+source "$BASE_DIR/core/core.sh"
 # =====================================
 # MehboobXT Panel Main Menu
 # Version: 1.0.0
@@ -20,9 +14,7 @@ do
 
 clear
 
-echo "=============================="
-echo "🚀 MehboobXT Panel"
-echo "=============================="
+header
 
 echo "1. VLESS Manager"
 echo "2. System Info"
