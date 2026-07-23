@@ -71,6 +71,12 @@ mkdir -p /etc/mehboobxt
 
 touch "$DB"
 
+if grep -q "^$user|" "$DB"; then
+    error "Username already exists"
+    pause
+    return
+fi
+
 echo "$user|$UUID|$(date -d "$days days" +%Y-%m-%d)" >> "$DB"
 
 echo ""
