@@ -62,9 +62,8 @@ header
 
 echo "Create VLESS User"
 
-echo "Username : $user"
-echo "UUID     : $UUID"
-echo "Expiry   : $(date -d "$days days" +%Y-%m-%d)"
+read -rp "Username : " user
+read -rp "Expiry Days : " days
 
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
@@ -81,7 +80,8 @@ success "VLESS User Created"
 
 echo ""
 echo "Username : $user"
-echo "Expiry  : $(date -d "$days days" +"%Y-%m-%d")"
+echo "UUID     : $UUID"
+echo "Expiry   : $(date -d "$days days" +%Y-%m-%d)"
 
 pause
 
@@ -94,7 +94,26 @@ header
 echo "========== VLESS Users =========="
 echo ""
 
-echo "No users yet."
+list_vless_users() {
+
+header
+
+DB="/etc/mehboobxt/vless_accounts.db"
+
+echo "========== VLESS Users =========="
+echo ""
+
+if [ ! -f "$DB" ]; then
+    echo "No users found."
+else
+    column -t -s "|" "$DB"
+fi
+
+echo ""
+
+pause
+
+}
 
 echo ""
 
