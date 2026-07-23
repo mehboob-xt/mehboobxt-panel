@@ -1,24 +1,22 @@
 #!/bin/bash
 
-source "$BASE_DIR/core/core.sh"
-# =====================================
-# MehboobXT Panel Main Menu
-# Version: 1.0.0
-# =====================================
-
 BASE_DIR="/opt/mehboobxt"
 MODULE_DIR="$BASE_DIR/modules"
+
+source "$BASE_DIR/core/core.sh"
+source "$MODULE_DIR/ssh.sh"
 
 while true
 do
 
 header
 
-echo "1. VLESS Manager"
-echo "2. System Info"
-echo "3. Backup"
-echo "4. Update Panel"
-echo "5. Exit"
+echo "1. SSH Manager"
+echo "2. VLESS Manager"
+echo "3. System Info"
+echo "4. Backup"
+echo "5. Update Panel"
+echo "6. Exit"
 
 echo ""
 
@@ -28,6 +26,12 @@ read -p "Select Option: " option
 case $option in
 
 1)
+
+ssh_menu
+
+;;
+
+2)
 
 if [ -f "$MODULE_DIR/vless.sh" ]
 then
@@ -44,7 +48,7 @@ fi
 
 ;;
 
-2)
+3)
 
 echo ""
 echo "🖥 System Information"
@@ -58,7 +62,7 @@ sleep 3
 
 ;;
 
-3)
+4)
 
 echo ""
 echo "📦 Backup System"
@@ -73,7 +77,7 @@ sleep 3
 
 ;;
 
-4)
+5)
 
 if [ -f "$MODULE_DIR/update.sh" ]
 then
@@ -91,7 +95,7 @@ fi
 
 ;;
 
-5)
+6)
 
 echo "Bye 👋"
 exit
