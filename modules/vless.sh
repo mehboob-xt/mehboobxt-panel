@@ -19,7 +19,8 @@ echo "7. Renew VLESS User"
 echo "8. Delete VLESS User"
 echo "9. Backup VLESS Database"
 echo "10. Restore VLESS Database"
-echo "11. Back"
+echo "11. VLESS Statistics"
+echo "12. Back"
 echo ""
 
 read -rp "Select Option : " option
@@ -64,6 +65,10 @@ restore_vless_db
 ;;
 
 11)
+vless_statistics
+;;
+
+12)
 break
 ;;
 
@@ -504,6 +509,44 @@ restore_vless_db() {
     echo ""
     echo "Restored From:"
     echo "$BACKUP_DIR/$FILE"
+    echo ""
+
+    pause
+}
+
+vless_statistics() {
+
+    header
+
+    DB="/etc/mehboobxt/vless_accounts.db"
+
+    if [ ! -f "$DB" ]; then
+        error "Database not found"
+        pause
+        return
+    fi
+
+    TODAY=$(date +%Y-%m-%d)
+
+    TOTAL=$(wc -l < "$DB")
+    ACTIVE=0
+    EXPIRED=0
+
+    while IFS="|" read -r USER UUID EXPIRY
+    do
+        if [[ "$EXPIRY" < "$TODAY" ]]; then
+            ((EXPIRED++))
+        else
+            ((ACTIVE++))
+        fi
+    done < "$DB"
+
+    echo ""
+    echo "========== VLESS Statistics =========="
+    echo ""
+    echo "Total Users   : $TOTAL"
+    echo "Active Users  : $ACTIVE"
+    echo "Expired Users : $EXPIRED"
     echo ""
 
     pause
