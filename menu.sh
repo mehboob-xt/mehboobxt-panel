@@ -5,7 +5,7 @@ MODULE_DIR="$BASE_DIR/modules"
 
 source "$BASE_DIR/core/core.sh"
 source "$MODULE_DIR/ssh.sh"
-
+source "$MODULE_DIR/vless.sh"
 while true
 do
 
@@ -33,18 +33,7 @@ ssh_menu
 
 2)
 
-if [ -f "$MODULE_DIR/vless.sh" ]
-then
-
-bash "$MODULE_DIR/vless.sh"
-
-else
-
-echo "❌ VLESS Module Missing"
-
-sleep 2
-
-fi
+vless_menu
 
 ;;
 
