@@ -165,6 +165,32 @@ renew_vless_user() {
 
     success "Validation Successful"
 
+    DATA=$(grep "^$user|" "$DB")
+
+IFS="|" read -r USER UUID EXPIRY <<< "$DATA"
+
+TODAY=$(date +%Y-%m-%d)
+
+if [[ "$EXPIRY" < "$TODAY" ]]; then
+    BASE_DATE="$TODAY"
+else
+    BASE_DATE="$EXPIRY"
+fi
+
+NEW_EXPIRY=$(date -d "$BASE_DATE +$days days" +%Y-%m-%d)
+
+grep -v "^$user|" "$DB" > /tmp/vless.tmp
+echo "$USER|$UUID|$NEW_EXPIRY" >> /tmp/vless.tmp
+mv /tmp/vless.tmp "$DB"
+
+echo ""
+success "VLESS User Renewed"
+
+echo ""
+echo "Username : $USER"
+echo "Old Expiry : $EXPIRY"
+echo "New Expiry : $NEW_EXPIRY"
+
     pause
 }
 
