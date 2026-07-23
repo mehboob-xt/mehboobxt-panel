@@ -132,7 +132,26 @@ echo ""
 if [ ! -f "$DB" ]; then
     echo "No users found."
 else
-    column -t -s "|" "$DB"
+    while IFS="|" read -r USER UUID EXPIRY
+do
+
+    TODAY=$(date +%Y-%m-%d)
+
+    if [[ "$EXPIRY" < "$TODAY" ]]; then
+        STATUS="Expired"
+    else
+        STATUS="Active"
+    fi
+
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "Username : $USER"
+    echo "UUID     : $UUID"
+    echo "Expiry   : $EXPIRY"
+    echo "Status   : $STATUS"
+
+done < "$DB"
+
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 fi
 
 echo ""
