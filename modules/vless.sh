@@ -63,6 +63,24 @@ echo "Create VLESS User"
 read -rp "Username : " user
 read -rp "Expiry Days : " days
 
+if [ -z "$user" ]; then
+    error "Username cannot be empty"
+    pause
+    return
+fi
+
+if ! [[ "$days" =~ ^[0-9]+$ ]]; then
+    error "Expiry must be a number"
+    pause
+    return
+fi
+
+if [ "$days" -le 0 ]; then
+    error "Expiry must be greater than 0"
+    pause
+    return
+fi
+
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
 DB="/etc/mehboobxt/vless_accounts.db"
