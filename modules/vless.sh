@@ -13,41 +13,38 @@ echo "1. Create VLESS User"
 echo "2. List VLESS Users"
 echo "3. Show VLESS User"
 echo "4. Copy VLESS Link"
-echo "5. Renew VLESS User"
-echo "6. Delete VLESS User"
-echo "7. Back"
+echo "5. Export VLESS Config"
+echo "6. Renew VLESS User"
+echo "7. Delete VLESS User"
+echo "8. Back"
 echo ""
 
 read -rp "Select Option : " option
 
 case $option in
 
-1)
-create_vless_user
+1)create_vless_user
 ;;
 
-2)
-list_vless_users
+2)list_vless_users
 ;;
 
-3)
-show_vless_user
+3)show_vless_user
 ;;
 
-4)
-copy_vless_link
+4)copy_vless_link
 ;;
 
-5)
-renew_vless_user
+5)export_vless_config
 ;;
 
-6)
-delete_vless_user
+6)renew_vless_user
 ;;
 
-7)
-break
+7)delete_vless_user
+;;
+
+8)break
 ;;
 
 *)
@@ -373,3 +370,71 @@ mv /tmp/vless.tmp "$DB"
 success "VLESS User Deleted"
 
 pause
+
+export_vless_config() {
+
+    header
+
+    echo "Export VLESS Config"
+
+    DB="/etc/mehboobxt/vless_accounts.db"
+    EXPORT_DIR="/etc/mehboobxt/export"
+
+    DOMAIN="tech.mehboobxt.ggff.net"
+    PORT="443"
+    TYPE="ws"
+    SECURITY="tls"
+    PATH="/vless"
+    SNI="$DOMAIN"
+
+    mkdir -p "$EXPORT_DIR"
+
+    read -rp "Username : " user
+
+    if [ ! -f "$DB" ]; then
+        error "Database not found"
+        pause
+        return
+    fi
+
+    DATA=$(grep "^$user|" "$DB")
+
+    if [ -z "$DATA" ]; then
+        error "User not found"
+        pause
+        return
+    fi
+
+    IFS="|" read -r USER UUID EXPIRY <<< "$DATA"
+
+    TODAY=$(date +%Y-%m-%d)
+
+    if [[ "$EXPIRY" < "$TODAY" ]]; then
+        STATUS="Expired"
+    else
+        STATUS="Active"
+    fi
+
+    LINK="vless://$UUID@$DOMAIN:$PORT?type=$TYPE&security=$SECURITY&encryption=none&path=$PATH&sni=$SNI#$USER"
+
+    FILE="$EXPORT_DIR/$USER.txt"
+
+    cat > "$FILE" <<EOF
+Username : $USER
+UUID     : $UUID
+Expiry   : $EXPIRY
+Status   : $STATUS
+
+VLESS Link:
+$LINK
+EOF
+
+    success "Config Exported"
+
+    echo ""
+    echo "Saved To:"
+    echo "$FILE"
+    echo ""
+
+    pause
+}
