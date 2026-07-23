@@ -55,7 +55,6 @@ esac
 done
 
 }
-
 create_vless_user() {
 
 header
@@ -78,11 +77,13 @@ echo ""
 success "VLESS User Created"
 
 echo ""
+echo "Username : $user"
+echo "UUID     : $UUID"
+echo "Expiry   : $(date -d "$days days" +%Y-%m-%d)"
 
 pause
 
 }
-
 list_vless_users() {
 
 header
@@ -103,13 +104,6 @@ echo ""
 pause
 
 }
-
-echo ""
-
-pause
-
-}
-
 delete_vless_user() {
 
 header
