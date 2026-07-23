@@ -121,6 +121,53 @@ echo "$LINK"
 pause
 
 }
+
+renew_vless_user() {
+
+    header
+
+    echo "Renew VLESS User"
+
+    DB="/etc/mehboobxt/vless_accounts.db"
+
+    read -rp "Username : " user
+    read -rp "Renew Days : " days
+
+    if [ -z "$user" ]; then
+        error "Username cannot be empty"
+        pause
+        return
+    fi
+
+    if ! [[ "$days" =~ ^[0-9]+$ ]]; then
+        error "Renew days must be a number"
+        pause
+        return
+    fi
+
+    if [ "$days" -le 0 ]; then
+        error "Renew days must be greater than 0"
+        pause
+        return
+    fi
+
+    if [ ! -f "$DB" ]; then
+        error "Database not found"
+        pause
+        return
+    fi
+
+    if ! grep -q "^$user|" "$DB"; then
+        error "User not found"
+        pause
+        return
+    fi
+
+    success "Validation Successful"
+
+    pause
+}
+
 list_vless_users() {
 
 header
