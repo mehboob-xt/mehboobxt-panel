@@ -9,11 +9,11 @@ header
 
 echo "========== VLESS Manager =========="
 echo ""
-1. Create VLESS User
-2. List VLESS Users
-3. Show VLESS User
-4. Delete VLESS User
-5. Back
+echo "1. Create VLESS User"
+echo "2. List VLESS Users"
+echo "3. Show VLESS User"
+echo "4. Delete VLESS User"
+echo "5. Back"
 echo ""
 
 read -rp "Select Option : " option
@@ -79,14 +79,14 @@ if [ "$days" -le 0 ]; then
 fi
 
 UUID=$(cat /proc/sys/kernel/random/uuid)
+
+DB="/etc/mehboobxt/vless_accounts.db"
 DOMAIN="tech.mehboobxt.ggff.net"
 PORT="443"
 TYPE="ws"
 SECURITY="tls"
 PATH="/vless"
 SNI="$DOMAIN"
-
-DB="/etc/mehboobxt/vless_accounts.db"
 
 mkdir -p /etc/mehboobxt
 
@@ -162,6 +162,13 @@ show_vless_user() {
 
     DB="/etc/mehboobxt/vless_accounts.db"
 
+    DOMAIN="tech.mehboobxt.ggff.net"
+    PORT="443"
+    TYPE="ws"
+    SECURITY="tls"
+    PATH="/vless"
+    SNI="$DOMAIN"
+
     read -rp "Username : " user
 
     if [ ! -f "$DB" ]; then
@@ -188,6 +195,7 @@ show_vless_user() {
         STATUS="Active"
     fi
 
+    
     LINK="vless://$UUID@$DOMAIN:$PORT?type=$TYPE&security=$SECURITY&encryption=none&path=$PATH&sni=$SNI#$USER"
 
     echo ""
