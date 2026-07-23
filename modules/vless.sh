@@ -62,8 +62,19 @@ header
 
 echo "Create VLESS User"
 
-read -rp "Username : " user
-read -rp "Expiry Days : " days
+echo "Username : $user"
+echo "UUID     : $UUID"
+echo "Expiry   : $(date -d "$days days" +%Y-%m-%d)"
+
+UUID=$(cat /proc/sys/kernel/random/uuid)
+
+DB="/etc/mehboobxt/vless_accounts.db"
+
+mkdir -p /etc/mehboobxt
+
+touch "$DB"
+
+echo "$user|$UUID|$(date -d "$days days" +%Y-%m-%d)" >> "$DB"
 
 echo ""
 success "VLESS User Created"
