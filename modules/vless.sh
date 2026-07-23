@@ -104,11 +104,14 @@ echo ""
 pause
 
 }
+
 delete_vless_user() {
 
 header
 
 echo "Delete VLESS User"
+
+read -rp "Username : " user
 
 DB="/etc/mehboobxt/vless_accounts.db"
 
@@ -120,8 +123,6 @@ fi
 
 grep -v "^$user|" "$DB" > /tmp/vless.tmp
 mv /tmp/vless.tmp "$DB"
-
-read -rp "Username : " user
 
 success "VLESS User Deleted"
 
