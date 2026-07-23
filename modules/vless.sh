@@ -9,10 +9,11 @@ header
 
 echo "========== VLESS Manager =========="
 echo ""
-echo "1. Create VLESS User"
-echo "2. List VLESS Users"
-echo "3. Delete VLESS User"
-echo "4. Back"
+1. Create VLESS User
+2. List VLESS Users
+3. Show VLESS User
+4. Delete VLESS User
+5. Back
 echo ""
 
 read -rp "Select Option : " option
@@ -20,27 +21,23 @@ read -rp "Select Option : " option
 case $option in
 
 1)
-
 create_vless_user
-
 ;;
 
 2)
-
 list_vless_users
-
 ;;
 
 3)
-
-delete_vless_user
-
+show_vless_user
 ;;
 
 4)
+delete_vless_user
+;;
 
+5)
 break
-
 ;;
 
 *)
@@ -111,8 +108,7 @@ echo "Username : $user"
 echo "UUID     : $UUID"
 echo "Expiry   : $(date -d "$days days" +"%Y-%m-%d")"
 
-LINK="vless://$UUID@$DOMAIN:$PORT?type=$TYPE&security=$SECURITY&path=$PATH&sni=$SNI#$user"
-
+LINK="vless://$UUID@$DOMAIN:$PORT?type=$TYPE&security=$SECURITY&encryption=none&path=$PATH&sni=$SNI#$user"
 echo ""
 echo "VLESS Link:"
 echo "$LINK"
@@ -159,6 +155,55 @@ echo ""
 pause
 
 }
+
+show_vless_user() {
+
+    header
+
+    DB="/etc/mehboobxt/vless_accounts.db"
+
+    read -rp "Username : " user
+
+    if [ ! -f "$DB" ]; then
+        error "Database not found"
+        pause
+        return
+    fi
+
+    DATA=$(grep "^$user|" "$DB")
+
+    if [ -z "$DATA" ]; then
+        error "User not found"
+        pause
+        return
+    fi
+
+    IFS="|" read -r USER UUID EXPIRY <<< "$DATA"
+
+    TODAY=$(date +%Y-%m-%d)
+
+    if [[ "$EXPIRY" < "$TODAY" ]]; then
+        STATUS="Expired"
+    else
+        STATUS="Active"
+    fi
+
+    LINK="vless://$UUID@$DOMAIN:$PORT?type=$TYPE&security=$SECURITY&encryption=none&path=$PATH&sni=$SNI#$USER"
+
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "Username : $USER"
+    echo "UUID     : $UUID"
+    echo "Expiry   : $EXPIRY"
+    echo "Status   : $STATUS"
+    echo ""
+    echo "VLESS Link:"
+    echo "$LINK"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+    pause
+}
+
 
 delete_vless_user() {
 
