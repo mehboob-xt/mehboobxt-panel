@@ -20,7 +20,8 @@ echo "8. Delete VLESS User"
 echo "9. Backup VLESS Database"
 echo "10. Restore VLESS Database"
 echo "11. VLESS Statistics"
-echo "12. Back"
+echo "12. Edit VLESS User"
+echo "13. Back"
 echo ""
 
 read -rp "Select Option : " option
@@ -69,6 +70,10 @@ vless_statistics
 ;;
 
 12)
+edit_vless_user
+;;
+
+13)
 break
 ;;
 
@@ -552,6 +557,38 @@ vless_statistics() {
     pause
 }
 
+edit_vless_user() {
+
+    header
+
+    echo "Edit VLESS User"
+
+    DB="/etc/mehboobxt/vless_accounts.db"
+
+    read -rp "Current Username : " OLDUSER
+    read -rp "New Username : " NEWUSER
+    read -rp "New Expiry Days : " DAYS
+    if [ -z "$OLDUSER" ] || [ -z "$NEWUSER" ]; then
+    error "Username cannot be empty"
+    pause
+    return
+fi
+
+if ! [[ "$DAYS" =~ ^[0-9]+$ ]]; then
+    error "Expiry days must be a number"
+    pause
+    return
+fi
+
+if [ "$DAYS" -le 0 ]; then
+    error "Expiry days must be greater than 0"
+    pause
+    return
+fi
+
+    pause
+}
+    
 export_vless_config() {
 
     header
