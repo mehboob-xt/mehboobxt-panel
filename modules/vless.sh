@@ -13,10 +13,11 @@ echo "1. Create VLESS User"
 echo "2. List VLESS Users"
 echo "3. Show VLESS User"
 echo "4. Copy VLESS Link"
-echo "5. Export VLESS Config"
-echo "6. Renew VLESS User"
-echo "7. Delete VLESS User"
-echo "8. Back"
+echo "5. Search VLESS User"
+echo "6. Export VLESS Config"
+echo "7. Renew VLESS User"
+echo "8. Delete VLESS User"
+echo "9. Back"
 echo ""
 
 read -rp "Select Option : " option
@@ -32,19 +33,28 @@ case $option in
 3)show_vless_user
 ;;
 
-4)copy_vless_link
+4)
+search_vless_user
 ;;
 
-5)export_vless_config
+5)
+copy_vless_link
 ;;
 
-6)renew_vless_user
+6)
+export_vless_config
 ;;
 
-7)delete_vless_user
+7)
+renew_vless_user
 ;;
 
-8)break
+8)
+delete_vless_user
+;;
+
+9)
+break
 ;;
 
 *)
@@ -341,6 +351,52 @@ show_vless_user() {
     pause
 }
 
+search_vless_user() {
+
+    header
+
+    echo "Search VLESS User"
+
+    DB="/etc/mehboobxt/vless_accounts.db"
+
+    read -rp "Username : " user
+
+    if [ ! -f "$DB" ]; then
+        error "Database not found"
+        pause
+        return
+    fi
+
+    DATA=$(grep "^$user|" "$DB")
+
+    if [ -z "$DATA" ]; then
+        error "User not found"
+        pause
+        return
+    fi
+
+    IFS="|" read -r USER UUID EXPIRY <<< "$DATA"
+
+    TODAY=$(date +%Y-%m-%d)
+
+    if [[ "$EXPIRY" < "$TODAY" ]]; then
+        STATUS="Expired"
+    else
+        STATUS="Active"
+    fi
+
+    echo ""
+    success "User Found"
+    echo ""
+    echo "Username : $USER"
+    echo "UUID     : $UUID"
+    echo "Expiry   : $EXPIRY"
+    echo "Status   : $STATUS"
+    echo ""
+
+    pause
+}
+
 
 delete_vless_user() {
 
@@ -370,6 +426,8 @@ mv /tmp/vless.tmp "$DB"
 success "VLESS User Deleted"
 
 pause
+
+}
 
 export_vless_config() {
 
