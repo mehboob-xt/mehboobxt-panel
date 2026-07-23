@@ -61,7 +61,6 @@ create_vless_user() {
 header
 
 echo "Create VLESS User"
-
 read -rp "Username : " user
 read -rp "Expiry Days : " days
 
@@ -79,20 +78,10 @@ echo ""
 success "VLESS User Created"
 
 echo ""
-echo "Username : $user"
-echo "UUID     : $UUID"
-echo "Expiry   : $(date -d "$days days" +%Y-%m-%d)"
 
 pause
 
 }
-
-list_vless_users() {
-
-header
-
-echo "========== VLESS Users =========="
-echo ""
 
 list_vless_users() {
 
