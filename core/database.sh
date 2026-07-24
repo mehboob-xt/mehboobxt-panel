@@ -44,7 +44,9 @@ db_delete() {
     local FILE="$1"
     local QUERY="$2"
 
-    sed -i "/^$QUERY|/d" "$FILE"
+    sed -i "/^$QUERY|/d" "$FILE" || return 1
+
+return 0
 
 }
 
