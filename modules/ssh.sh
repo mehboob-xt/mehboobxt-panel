@@ -179,19 +179,15 @@ if system_user_exists "$USER"; then
     return
 fi
 
-system_create_user "$USER" "$PASS" "$EXPIRY"
-
-echo ""
-# Expiry Date
 EXPIRY=$(date -d "$DAYS days" +"%Y-%m-%d")
+
+system_create_user "$USER" "$PASS" "$EXPIRY"
 
 if [ $? -ne 0 ]; then
     error "Failed to create SSH user"
     pause
     return
 fi
-
-system_change_password "$USER" "$PASS"
 
 if [ $? -ne 0 ]; then
     error "Failed to set password"
@@ -476,8 +472,8 @@ show_online_users() {
     echo "========== Online SSH Users =========="
     echo ""
 
-    if who | grep -q .; then
-        system_online_users
+    system_online_users
+    
     else
         echo "No SSH users are currently online."
     fi
@@ -496,7 +492,7 @@ ssh_statistics() {
 
     TOTAL=$(db_count "$DB")
 
-    ONLINE=$(who | awk '{print $1}' | sort -u | wc -l)
+    ONLINE=$(system_online_count)
 
     echo "Total Users  : $TOTAL"
     echo "Online Users : $ONLINE"
