@@ -257,48 +257,344 @@ pause
 
 search_ssh_user() {
 
+    header
+
+    echo "========== Search SSH User =========="
+    echo ""
+
+    read -rp "Search Username : " SEARCH
+
+    if [ ! -f "$DB" ]; then
+        error "Database not found"
+        pause
+        return
+    fi
+
+    RESULT=$(grep -i "$SEARCH" "$DB")
+
+    if [ -z "$RESULT" ]; then
+        error "No matching SSH user found"
+        pause
+        return
+    fi
+
+    echo ""
+
+    while IFS="|" read -r USER PASS EXPIRY
+    do
+        echo "Username : $USER"
+        echo "Password : $PASS"
+        echo "Expiry   : $EXPIRY"
+        echo "-----------------------------"
+    done <<< "$RESULT"
+
+    pause
+
 }
 
 renew_ssh_user() {
 
-}
+    header
 
+    echo "========== Renew SSH User =========="
+    echo ""
+
+    read -rp "Username     : " USER
+    read -rp "Extra Days   : " DAYS
+
+    if ! grep -q "^$USER|" "$DB"; then
+        error "SSH User not found"
+        pause
+        return
+    fi
+
+    if ! [[ "$DAYS" =~ ^[0-9]+$ ]]; then
+        error "Days must be a number"
+        pause
+        return
+    fi
+
+    EXPIRY=$(date -d "$DAYS days" +"%Y-%m-%d")
+
+    usermod -e "$EXPIRY" "$USER"
+
+    PASS=$(grep "^$USER|" "$DB" | cut -d'|' -f2)
+
+    sed -i "/^$USER|/d" "$DB"
+    echo "$USER|$PASS|$EXPIRY" >> "$DB"
+
+    echo ""
+    success "SSH User Renewed Successfully"
+    echo ""
+    echo "Username : $USER"
+    echo "Expiry   : $EXPIRY"
+
+    pause
+
+}
 delete_ssh_user() {
+
+    header
+
+    echo "========== Delete SSH User =========="
+    echo ""
+
+    read -rp "Username : " USER
+
+    if ! id "$USER" >/dev/null 2>&1; then
+        error "SSH User not found"
+        pause
+        return
+    fi
+
+    userdel "$USER"
+
+    sed -i "/^$USER|/d" "$DB"
+
+    echo ""
+    success "SSH User Deleted Successfully"
+    echo ""
+    echo "Username : $USER"
+
+    pause
 
 }
 
 change_ssh_password() {
 
+    header
+
+    echo "========== Change SSH Password =========="
+    echo ""
+
+    read -rp "Username     : " USER
+    read -rp "New Password : " PASS
+
+    if ! id "$USER" >/dev/null 2>&1; then
+        error "SSH User not found"
+        pause
+        return
+    fi
+
+    echo "$USER:$PASS" | chpasswd
+
+    EXPIRY=$(grep "^$USER|" "$DB" | cut -d'|' -f3)
+
+    sed -i "/^$USER|/d" "$DB"
+    echo "$USER|$PASS|$EXPIRY" >> "$DB"
+
+    echo ""
+    success "Password Changed Successfully"
+    echo ""
+    echo "Username : $USER"
+
+    pause
+
 }
 
 lock_ssh_user() {
+
+    header
+
+    echo "========== Lock SSH User =========="
+    echo ""
+
+    read -rp "Username : " USER
+
+    if ! id "$USER" >/dev/null 2>&1; then
+        error "SSH User not found"
+        pause
+        return
+    fi
+
+    passwd -l "$USER"
+
+    echo ""
+    success "SSH User Locked Successfully"
+    echo ""
+    echo "Username : $USER"
+
+    pause
 
 }
 
 unlock_ssh_user() {
 
+    header
+
+    echo "========== Unlock SSH User =========="
+    echo ""
+
+    read -rp "Username : " USER
+
+    if ! id "$USER" >/dev/null 2>&1; then
+        error "SSH User not found"
+        pause
+        return
+    fi
+
+    passwd -u "$USER"
+
+    echo ""
+    success "SSH User Unlocked Successfully"
+    echo ""
+    echo "Username : $USER"
+
+    pause
+
 }
 
 show_online_users() {
+
+    header
+
+    echo "========== Online SSH Users =========="
+    echo ""
+
+    if who | grep -q .; then
+        who
+    else
+        echo "No SSH users are currently online."
+    fi
+
+    echo ""
+    pause
 
 }
 
 ssh_statistics() {
 
+    header
+
+    echo "========== SSH Statistics =========="
+    echo ""
+
+    TOTAL=$(wc -l < "$DB")
+
+    ONLINE=$(who | awk '{print $1}' | sort -u | wc -l)
+
+    echo "Total Users  : $TOTAL"
+    echo "Online Users : $ONLINE"
+
+    echo ""
+
+    pause
+
 }
 
 backup_ssh_db() {
+
+    header
+
+    echo "========== Backup SSH Database =========="
+    echo ""
+
+    FILE="$BACKUP/ssh_backup_$(date +%Y%m%d_%H%M%S).db"
+
+    cp "$DB" "$FILE"
+
+    success "Backup Created"
+
+    echo ""
+    echo "Saved To:"
+    echo "$FILE"
+
+    pause
 
 }
 
 restore_ssh_db() {
 
+    header
+
+    echo "========== Restore SSH Database =========="
+    echo ""
+
+    ls "$BACKUP"
+
+    echo ""
+
+    read -rp "Backup File : " FILE
+
+    if [ ! -f "$BACKUP/$FILE" ]; then
+        error "Backup not found"
+        pause
+        return
+    fi
+
+    cp "$BACKUP/$FILE" "$DB"
+
+    success "Database Restored"
+
+    pause
+
 }
 
 edit_ssh_user() {
 
+    header
+
+    echo "========== Edit SSH User =========="
+    echo ""
+
+    read -rp "Current Username : " OLDUSER
+    read -rp "New Username     : " NEWUSER
+
+    if ! id "$OLDUSER" >/dev/null 2>&1; then
+        error "SSH User not found"
+        pause
+        return
+    fi
+
+    usermod -l "$NEWUSER" "$OLDUSER"
+
+    PASS=$(grep "^$OLDUSER|" "$DB" | cut -d'|' -f2)
+    EXPIRY=$(grep "^$OLDUSER|" "$DB" | cut -d'|' -f3)
+
+    sed -i "/^$OLDUSER|/d" "$DB"
+    echo "$NEWUSER|$PASS|$EXPIRY" >> "$DB"
+
+    success "SSH User Updated"
+
+    pause
+
 }
 
 export_ssh_config() {
+
+    header
+
+    echo "========== Export SSH Config =========="
+    echo ""
+
+    read -rp "Username : " USER
+
+    DATA=$(grep "^$USER|" "$DB")
+
+    if [ -z "$DATA" ]; then
+        error "SSH User not found"
+        pause
+        return
+    fi
+
+    IFS="|" read -r USER PASS EXPIRY <<< "$DATA"
+
+    FILE="$EXPORT/$USER.txt"
+
+    cat > "$FILE" <<EOF
+========== MehboobXT SSH ==========
+Username : $USER
+Password : $PASS
+Expiry   : $EXPIRY
+===================================
+EOF
+
+    success "Config Exported"
+
+    echo ""
+    echo "Saved To:"
+    echo "$FILE"
+
+    pause
 
 }
