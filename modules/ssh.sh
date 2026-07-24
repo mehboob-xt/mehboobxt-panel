@@ -1,5 +1,11 @@
 #!/bin/bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+source "$SCRIPT_DIR/../core/common.sh"
+source "$SCRIPT_DIR/../core/colors.sh"
+source "$SCRIPT_DIR/../core/config.sh"
+
 BASE="/etc/mehboobxt"
 
 DB="$BASE/ssh_accounts.db"
