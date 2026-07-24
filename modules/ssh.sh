@@ -270,6 +270,12 @@ search_ssh_user() {
         return
     fi
 
+    if [ -z "$SEARCH" ]; then
+    error "Search cannot be empty"
+    pause
+    return
+    fi
+
     RESULT=$(grep -i "$SEARCH" "$DB")
 
     if [ -z "$RESULT" ]; then
@@ -347,7 +353,7 @@ delete_ssh_user() {
         return
     fi
 
-    userdel "$USER"
+    userdel -f "$USER"
 
     sed -i "/^$USER|/d" "$DB"
 
