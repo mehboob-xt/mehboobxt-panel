@@ -425,7 +425,7 @@ echo "Delete VLESS User"
 
 read -rp "Username : " user
 
-DB="/etc/mehboobxt/vless_accounts.db"
+DB="$VLESS_DB"
 
 if [ ! -f "$DB" ]; then
     error "Database not found"
@@ -455,17 +455,11 @@ backup_vless_db() {
     echo "Backup VLESS Database"
 
     DB="$VLESS_DB"
-    BACKUP_DIR="/etc/mehboobxt/backup"
+    BACKUP_PATH="$BACKUP_DIR"
+    
+    mkdir -p "$BACKUP_PATH"
 
-    mkdir -p "$BACKUP_DIR"
-
-    if [ ! -f "$DB" ]; then
-        error "Database not found"
-        pause
-        return
-    fi
-
-    FILE="$BACKUP_DIR/vless_backup_$(date +%Y%m%d_%H%M%S).db"
+    FILE="$BACKUP_PATH/vless_backup_$(date +%Y%m%d_%H%M%S).db"
 
     cp "$DB" "$FILE"
 
@@ -485,7 +479,7 @@ restore_vless_db() {
 
     echo "Restore VLESS Database"
 
-    BACKUP_DIR="/etc/mehboobxt/backup"
+    BACKUP_PATH="$BACKUP_DIR"
     DB="$VLESS_DB"
 
     if [ ! -d "$BACKUP_DIR" ]; then
