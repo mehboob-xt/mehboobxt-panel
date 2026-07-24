@@ -128,13 +128,13 @@ SNI="$DOMAIN"
 mkdir -p "$DATA_DIR"
 touch "$DB"
 
-if grep -q "^$user|" "$DB"; then
+if db_read -q "$DB" "$user"; then
     error "Username already exists"
     pause
     return
 fi
 
-echo "$user|$UUID|$(date -d "$days days" +%Y-%m-%d)" >> "$DB"
+db_add "$DB" "$user|$UUID|$(date -d "$days days" +%Y-%m-%d)"
 
 echo ""
 success "VLESS User Created"
@@ -188,7 +188,7 @@ renew_vless_user() {
         return
     fi
 
-    if ! grep -q "^$user|" "$DB"; then
+    if ! db_read "$DB" "$user"; then
         error "User not found"
         pause
         return
@@ -196,7 +196,7 @@ renew_vless_user() {
 
     success "Validation Successful"
 
-    DATA=$(grep "^$user|" "$DB")
+    DATA=$(db_read "$DB" "$user")
 
 IFS="|" read -r USER UUID EXPIRY <<< "$DATA"
 
@@ -210,9 +210,7 @@ fi
 
 NEW_EXPIRY=$(date -d "$BASE_DATE +$days days" +%Y-%m-%d)
 
-grep -v "^$user|" "$DB" > /tmp/vless.tmp
-echo "$USER|$UUID|$NEW_EXPIRY" >> /tmp/vless.tmp
-mv /tmp/vless.tmp "$DB"
+db_update "$DB" "$USER" "$USER|$UUID|$NEW_EXPIRY"
 
 echo ""
 success "VLESS User Renewed"
@@ -247,7 +245,7 @@ copy_vless_link() {
         return
     fi
 
-    DATA=$(grep "^$user|" "$DB")
+    DATA=$(db_read "$DB" "$user")
 
     if [ -z "$DATA" ]; then
         error "User not found"
@@ -334,8 +332,8 @@ show_vless_user() {
         return
     fi
 
-    DATA=$(grep "^$user|" "$DB")
-
+    DATA=$(db_read "$DB" "$user")
+    
     if [ -z "$DATA" ]; then
         error "User not found"
         pause
@@ -385,7 +383,7 @@ search_vless_user() {
         return
     fi
 
-    DATA=$(grep "^$user|" "$DB")
+    DATA=$(db_read "$DB" "$user")
 
     if [ -z "$DATA" ]; then
         error "User not found"
@@ -432,14 +430,13 @@ if [ ! -f "$DB" ]; then
     return
 fi
 
-if ! grep -q "^$user|" "$DB"; then
+if ! db_read "$DB" "$user"; then
     error "User not found"
     pause
     return
 fi
 
-grep -v "^$user|" "$DB" > /tmp/vless.tmp
-mv /tmp/vless.tmp "$DB"
+db_delete "$DB" "$user"
 
 success "VLESS User Deleted"
 
@@ -566,8 +563,15 @@ edit_vless_user() {
     read -rp "Current Username : " OLDUSER
     read -rp "New Username : " NEWUSER
     read -rp "New Expiry Days : " DAYS
+    
     if [ -z "$OLDUSER" ] || [ -z "$NEWUSER" ]; then
     error "Username cannot be empty"
+    pause
+    return
+fi
+
+if [ "$OLDUSER" != "$NEWUSER" ] && db_read "$DB" "$NEWUSER" >/dev/null; then
+    error "Username already exists"
     pause
     return
 fi
@@ -584,7 +588,45 @@ if [ "$DAYS" -le 0 ]; then
     return
 fi
 
+if [ ! -f "$DB" ]; then
+    error "Database not found"
     pause
+    return
+fi
+
+DATA=$(db_read "$DB" "$OLDUSER")
+
+if [ -z "$DATA" ]; then
+    error "User not found"
+    pause
+    return
+fi
+
+IFS="|" read -r USER UUID EXPIRY <<< "$DATA"
+
+TODAY=$(date +%Y-%m-%d)
+
+if [[ "$EXPIRY" < "$TODAY" ]]; then
+    BASE_DATE="$TODAY"
+else
+    BASE_DATE="$EXPIRY"
+fi
+
+NEW_EXPIRY=$(date -d "$BASE_DATE +$DAYS days" +%Y-%m-%d)
+
+db_update "$DB" "$OLDUSER" "$NEWUSER|$UUID|$NEW_EXPIRY"
+
+  success "VLESS User Updated"
+
+echo ""
+echo "Old Username : $OLDUSER"
+echo "New Username : $NEWUSER"
+echo "UUID         : $UUID"
+echo "New Expiry   : $NEW_EXPIRY"
+echo ""
+
+pause
+
 }
     
 export_vless_config() {
@@ -612,7 +654,7 @@ export_vless_config() {
         return
     fi
 
-    DATA=$(grep "^$user|" "$DB")
+    DATA=$(db_read "$DB" "$user")
 
     if [ -z "$DATA" ]; then
         error "User not found"
