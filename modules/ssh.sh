@@ -203,7 +203,7 @@ if [ $? -ne 0 ]; then
     return
 fi
 
-echo "$USER|$PASS|$EXPIRY" >> "$DB"
+db_add "$DB" "$USER|$PASS|$EXPIRY"
 
 
 echo ""
@@ -255,7 +255,7 @@ read -rp "Username : " USER
         return
     fi
 
-    DATA=$(grep -m1 "^$USER|" "$DB")
+    DATA=$(db_find "$DB" "$USER")
 
     if [ -z "$DATA" ]; then
         error "SSH User not found"
@@ -302,7 +302,7 @@ search_ssh_user() {
     return
     fi
 
-    RESULT=$(grep -i "$SEARCH" "$DB")
+    RESULT=$(db_search "$DB" "$SEARCH")
 
     if [ -z "$RESULT" ]; then
         error "No matching SSH user found"
@@ -352,8 +352,7 @@ renew_ssh_user() {
 
     PASS=$(grep "^$USER|" "$DB" | cut -d'|' -f2)
 
-    sed -i "/^$USER|/d" "$DB"
-    echo "$USER|$PASS|$EXPIRY" >> "$DB"
+    db_update "$DB" "$USER" "$USER|$PASS|$EXPIRY"
 
     echo ""
     success "SSH User Renewed Successfully"
@@ -381,7 +380,7 @@ delete_ssh_user() {
 
     userdel -f "$USER"
 
-    sed -i "/^$USER|/d" "$DB"
+    db_delete "$DB" "$USER"
 
     echo ""
     success "SSH User Deleted Successfully"
@@ -412,8 +411,7 @@ change_ssh_password() {
 
     EXPIRY=$(grep "^$USER|" "$DB" | cut -d'|' -f3)
 
-    sed -i "/^$USER|/d" "$DB"
-    echo "$USER|$PASS|$EXPIRY" >> "$DB"
+    db_update "$DB" "$USER" "$USER|$PASS|$EXPIRY"
 
     echo ""
     success "Password Changed Successfully"
@@ -523,7 +521,7 @@ backup_ssh_db() {
 
     FILE="$BACKUP/ssh_backup_$(date +%Y%m%d_%H%M%S).db"
 
-    if cp "$DB" "$FILE"; then
+    if db_backup "$DB" "$FILE" then
     success "Backup Created"
 else
     error "Backup Failed"
@@ -558,7 +556,7 @@ restore_ssh_db() {
         return
     fi
 
-    if cp "$BACKUP/$FILE" "$DB"; then
+    if db_restore "$BACKUP/$FILE" "$DB" then
     success "Database Restored"
 else
     error "Restore Failed"
@@ -594,8 +592,7 @@ edit_ssh_user() {
     PASS=$(grep "^$OLDUSER|" "$DB" | cut -d'|' -f2)
     EXPIRY=$(grep "^$OLDUSER|" "$DB" | cut -d'|' -f3)
 
-    sed -i "/^$OLDUSER|/d" "$DB"
-    echo "$NEWUSER|$PASS|$EXPIRY" >> "$DB"
+    db_update "$DB" "$OLDUSER" "$NEWUSER|$PASS|$EXPIRY"
 
     success "SSH User Updated"
 
