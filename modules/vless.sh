@@ -117,8 +117,7 @@ fi
 
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
-DB="/etc/mehboobxt/vless_accounts.db"
-
+DB="$VLESS_DB"
 DOMAIN="$VLESS_DOMAIN"
 PORT="$VLESS_PORT"
 TYPE="$VLESS_NETWORK"
@@ -161,7 +160,7 @@ renew_vless_user() {
 
     echo "Renew VLESS User"
 
-    DB="/etc/mehboobxt/vless_accounts.db"
+    DB="$VLESS_DB"
 
     read -rp "Username : " user
     read -rp "Renew Days : " days
@@ -233,8 +232,7 @@ copy_vless_link() {
 
     echo "Copy VLESS Link"
 
-    DB="/etc/mehboobxt/vless_accounts.db"
-
+    DB="$VLESS_DB"
     DOMAIN="$VLESS_DOMAIN"
     PORT="$VLESS_PORT"
     TYPE="$VLESS_NETWORK"
@@ -280,7 +278,7 @@ list_vless_users() {
 
 header
 
-DB="/etc/mehboobxt/vless_accounts.db"
+DB="$VLESS_DB"
 
 echo "========== VLESS Users =========="
 echo ""
@@ -320,7 +318,7 @@ show_vless_user() {
 
     header
 
-    DB="/etc/mehboobxt/vless_accounts.db"
+    DB="$VLESS_DB"
 
     DOMAIN="$VLESS_DOMAIN"
     PORT="$VLESS_PORT"
@@ -378,7 +376,7 @@ search_vless_user() {
 
     echo "Search VLESS User"
 
-    DB="/etc/mehboobxt/vless_accounts.db"
+    DB="$VLESS_DB"
 
     read -rp "Username : " user
 
@@ -456,7 +454,7 @@ backup_vless_db() {
 
     echo "Backup VLESS Database"
 
-    DB="/etc/mehboobxt/vless_accounts.db"
+    DB="$VLESS_DB"
     BACKUP_DIR="/etc/mehboobxt/backup"
 
     mkdir -p "$BACKUP_DIR"
@@ -488,7 +486,7 @@ restore_vless_db() {
     echo "Restore VLESS Database"
 
     BACKUP_DIR="/etc/mehboobxt/backup"
-    DB="/etc/mehboobxt/vless_accounts.db"
+    DB="$VLESS_DB"
 
     if [ ! -d "$BACKUP_DIR" ]; then
         error "Backup directory not found"
@@ -524,7 +522,7 @@ vless_statistics() {
 
     header
 
-    DB="/etc/mehboobxt/vless_accounts.db"
+    DB="$VLESS_DB"
 
     if [ ! -f "$DB" ]; then
         error "Database not found"
@@ -564,7 +562,7 @@ edit_vless_user() {
 
     echo "Edit VLESS User"
 
-    DB="/etc/mehboobxt/vless_accounts.db"
+    DB="$VLESS_DB"
 
     read -rp "Current Username : " OLDUSER
     read -rp "New Username : " NEWUSER
@@ -596,7 +594,7 @@ export_vless_config() {
 
     echo "Export VLESS Config"
 
-    DB="/etc/mehboobxt/vless_accounts.db"
+    DB="$VLESS_DB"
     EXPORT_DIR="/etc/mehboobxt/export"
 
     DOMAIN="$VLESS_DOMAIN"
