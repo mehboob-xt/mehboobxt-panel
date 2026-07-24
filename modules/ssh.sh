@@ -189,7 +189,6 @@ echo "Password : $PASS"
 echo "Expiry   : $EXPIRY"
 
 pause
-# Create Linux SSH User
 
 }
 
