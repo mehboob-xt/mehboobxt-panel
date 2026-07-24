@@ -173,11 +173,13 @@ if [ "$DAYS" -le 0 ]; then
     return
 fi
 
-if ! system_user_exists "$USER"; then
-    error "SSH User not found"
+if system_user_exists "$USER"; then
+    error "SSH User already exists"
     pause
     return
 fi
+
+system_create_user "$USER" "$PASS" "$EXPIRY"
 
 echo ""
 # Expiry Date
@@ -342,7 +344,7 @@ renew_ssh_user() {
 
     EXPIRY=$(date -d "$DAYS days" +"%Y-%m-%d")
 
-    usermod -e "$EXPIRY" "$USER"
+    system_set_expiry "$USER" "$EXPIRY"
 
     PASS=$(db_get_field "$DB" "$USER" 2)
     
@@ -365,15 +367,14 @@ delete_ssh_user() {
     echo ""
 
     read -rp "Username : " USER
-
-    if ! id "$USER" >/dev/null 2>&1; then
+    
+    if ! system_user_exists "$USER"; then
         error "SSH User not found"
         pause
         return
     fi
 
-    system_change_password "$USER" "$PASS"
-
+    system_delete_user "$USER"
     db_delete "$DB" "$USER"
 
     echo ""
@@ -395,7 +396,7 @@ change_ssh_password() {
     read -rp "Username     : " USER
     read -rp "New Password : " PASS
 
-    if ! id "$USER" >/dev/null 2>&1; then
+    if ! system_user_exists "$USER"; then
         error "SSH User not found"
         pause
         return
@@ -425,13 +426,13 @@ lock_ssh_user() {
 
     read -rp "Username : " USER
 
-    if ! id "$USER" >/dev/null 2>&1; then
+    if ! system_user_exists "$USER"; then
         error "SSH User not found"
         pause
         return
     fi
 
-    passwd -l "$USER"
+    system_lock_user "$USER"
 
     echo ""
     success "SSH User Locked Successfully"
@@ -451,13 +452,13 @@ unlock_ssh_user() {
 
     read -rp "Username : " USER
 
-    if ! id "$USER" >/dev/null 2>&1; then
+    if ! system_user_exists "$USER"; then
         error "SSH User not found"
         pause
         return
     fi
 
-    passwd -u "$USER"
+    system_unlock_user "$USER"
 
     echo ""
     success "SSH User Unlocked Successfully"
@@ -570,7 +571,7 @@ edit_ssh_user() {
     read -rp "Current Username : " OLDUSER
     read -rp "New Username     : " NEWUSER
 
-    if ! id "$OLDUSER" >/dev/null 2>&1; then
+    if ! system_user_exists "$OLDUSER"; then
         error "SSH User not found"
         pause
         return
