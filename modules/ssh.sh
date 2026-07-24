@@ -181,16 +181,8 @@ fi
 
 EXPIRY=$(date -d "$DAYS days" +"%Y-%m-%d")
 
-system_create_user "$USER" "$PASS" "$EXPIRY"
-
-if [ $? -ne 0 ]; then
+if ! system_create_user "$USER" "$PASS" "$EXPIRY"; then
     error "Failed to create SSH user"
-    pause
-    return
-fi
-
-if [ $? -ne 0 ]; then
-    error "Failed to set password"
     pause
     return
 fi
