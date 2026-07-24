@@ -151,7 +151,25 @@ if id "$USER" >/dev/null 2>&1; then
     return
 fi
 
-success "Validation Successful"
+echo ""
+success "SSH User Created Successfully"
+
+echo ""
+echo "Username : $USER"
+echo "Password : $PASS"
+echo "Expiry   : $EXPIRY"
+# Expiry Date
+EXPIRY=$(date -d "$DAYS days" +"%Y-%m-%d")
+
+# Create Linux SSH User
+useradd \
+-e "$EXPIRY" \
+-M \
+-s /usr/sbin/nologin \
+"$USER"
+
+# Set Password
+echo "$USER:$PASS" | chpasswd
 
     pause
 
