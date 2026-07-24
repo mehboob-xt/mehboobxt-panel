@@ -73,3 +73,45 @@ db_restore() {
     cp "$SRC" "$DEST"
 
 }
+db_read() {
+
+    local FILE="$1"
+    local QUERY="$2"
+
+    grep -m1 "^$QUERY|" "$FILE"
+
+}
+
+db_get_field() {
+
+    local FILE="$1"
+    local QUERY="$2"
+    local FIELD="$3"
+
+    db_read "$FILE" "$QUERY" | cut -d'|' -f"$FIELD"
+
+}
+
+db_count() {
+
+    local FILE="$1"
+
+    wc -l < "$FILE"
+
+}
+
+db_empty() {
+
+    local FILE="$1"
+
+    [ ! -s "$FILE" ]
+
+}
+
+db_list() {
+
+    local FILE="$1"
+
+    cat "$FILE"
+
+}
