@@ -473,10 +473,6 @@ show_online_users() {
     echo ""
 
     system_online_users
-    
-    else
-        echo "No SSH users are currently online."
-    fi
 
     echo ""
     pause
