@@ -14,9 +14,15 @@ EXPORT="$SSH_EXPORT_DIR"
 
 init_ssh_manager() {
 
-    mkdir -p "$BASE_DIR"
-    mkdir -p "$BACKUP"
-    mkdir -p "$EXPORT"
+    
+mkdir -p "$DATA_DIR"
+mkdir -p "$BACKUP_DIR"
+mkdir -p "$EXPORT_DIR"
+
+mkdir -p "$BACKUP"
+mkdir -p "$EXPORT"
+
+    
 
     touch "$DB"
 
