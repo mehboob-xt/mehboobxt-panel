@@ -502,15 +502,13 @@ backup_ssh_db() {
 
     if db_backup "$DB" "$FILE"; then
     success "Backup Created"
-else
-    error "Backup Failed"
-fi
-
-    
 
     echo ""
     echo "Saved To:"
     echo "$FILE"
+else
+    error "Backup Failed"
+fi
 
     pause
 
@@ -521,13 +519,19 @@ restore_ssh_db() {
     header
 
     echo "========== Restore SSH Database =========="
-    echo ""
+echo ""
 
-    ls "$BACKUP"
+if [ -z "$(ls -A "$BACKUP" 2>/dev/null)" ]; then
+    error "No backup files found"
+    pause
+    return
+fi
 
-    echo ""
+ls "$BACKUP"
 
-    read -rp "Backup File : " FILE
+echo ""
+
+read -rp "Backup File : " FILE
 
     if [ ! -f "$BACKUP/$FILE" ]; then
         error "Backup not found"
@@ -560,6 +564,12 @@ edit_ssh_user() {
         pause
         return
     fi
+
+    if system_user_exists "$NEWUSER"; then
+    error "New username already exists"
+    pause
+    return
+fi
 
     system_rename_user "$OLDUSER" "$NEWUSER"
     
