@@ -125,8 +125,7 @@ SECURITY="$VLESS_SECURITY"
 PATH="$VLESS_PATH"
 SNI="$DOMAIN"
 
-mkdir -p /etc/mehboobxt
-
+mkdir -p "$DATA_DIR"
 touch "$DB"
 
 if grep -q "^$user|" "$DB"; then
@@ -455,11 +454,17 @@ backup_vless_db() {
     echo "Backup VLESS Database"
 
     DB="$VLESS_DB"
-    BACKUP_PATH="$BACKUP_DIR"
+    BACKUP_PATH="$BACKUP_PATH"
     
     mkdir -p "$BACKUP_PATH"
 
     FILE="$BACKUP_PATH/vless_backup_$(date +%Y%m%d_%H%M%S).db"
+    
+    if [ ! -f "$DB" ]; then
+    error "Database not found"
+    pause
+    return
+    fi
 
     cp "$DB" "$FILE"
 
@@ -479,34 +484,34 @@ restore_vless_db() {
 
     echo "Restore VLESS Database"
 
-    BACKUP_PATH="$BACKUP_DIR"
+    BACKUP_PATH="$BACKUP_PATH"
     DB="$VLESS_DB"
 
-    if [ ! -d "$BACKUP_DIR" ]; then
+    if [ ! -d "$BACKUP_PATH" ]; then
         error "Backup directory not found"
         pause
         return
     fi
 
     echo ""
-    ls -1 "$BACKUP_DIR"
+    ls -1 "$BACKUP_PATH"
     echo ""
 
     read -rp "Backup File : " FILE
 
-    if [ ! -f "$BACKUP_DIR/$FILE" ]; then
+    if [ ! -f "$BACKUP_PATH/$FILE" ]; then
         error "Backup file not found"
         pause
         return
     fi
 
-    cp "$BACKUP_DIR/$FILE" "$DB"
+    cp "$BACKUP_PATH/$FILE" "$DB"
 
     success "Database Restored"
 
     echo ""
     echo "Restored From:"
-    echo "$BACKUP_DIR/$FILE"
+    echo "$BACKUP_PATH/$FILE"
     echo ""
 
     pause
@@ -589,8 +594,7 @@ export_vless_config() {
     echo "Export VLESS Config"
 
     DB="$VLESS_DB"
-    EXPORT_DIR="/etc/mehboobxt/export"
-
+    EXPORT_PATH="$EXPORT_DIR"
     DOMAIN="$VLESS_DOMAIN"
     PORT="$VLESS_PORT"
     TYPE="$VLESS_NETWORK"
@@ -598,7 +602,7 @@ export_vless_config() {
     PATH="$VLESS_PATH"
     SNI="$DOMAIN"
 
-    mkdir -p "$EXPORT_DIR"
+    mkdir -p "$EXPORT_PATH"
 
     read -rp "Username : " user
 
@@ -628,7 +632,7 @@ export_vless_config() {
 
     LINK="vless://$UUID@$DOMAIN:$PORT?type=$TYPE&security=$SECURITY&encryption=none&path=$PATH&sni=$SNI#$USER"
 
-    FILE="$EXPORT_DIR/$USER.txt"
+    FILE="$EXPORT_PATH/$USER.txt"
 
     cat > "$FILE" <<EOF
 Username : $USER
