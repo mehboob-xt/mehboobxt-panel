@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CONFIG_FILE="/etc/mehboobxt/panel.conf"
+CONFIG_FILE="./config/panel.conf"
 
 if [ -f "$CONFIG_FILE" ]; then
     source "$CONFIG_FILE"
@@ -24,6 +24,4 @@ API_DIR="$BASE_DIR/api"
 
 SSH_DB="$DATA_DIR/ssh_accounts.db"
 
-SSH_BACKUP_DIR="$BACKUP_DIR/ssh"
-
-SSH_EXPORT_DIR="$EXPORT_DIR/ssh"
+VLESS_DB="$DATA_DIR/vless_accounts.db"
