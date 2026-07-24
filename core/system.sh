@@ -26,6 +26,8 @@ system_create_user() {
 
     echo "$USER:$PASS" | chpasswd || return 1
 
+return 0
+
 }
 
 system_delete_user() {
