@@ -8,8 +8,22 @@ fi
 
 BASE_DIR="/etc/mehboobxt"
 
-SSH_DB="$BASE_DIR/ssh_accounts.db"
+DATA_DIR="$BASE_DIR/data"
 
-SSH_BACKUP_DIR="$BASE_DIR/backup/ssh"
+BACKUP_DIR="$BASE_DIR/backup"
 
-SSH_EXPORT_DIR="$BASE_DIR/export/ssh"
+EXPORT_DIR="$BASE_DIR/export"
+
+LOG_DIR="$BASE_DIR/logs"
+
+TEMP_DIR="$BASE_DIR/tmp"
+
+CONFIG_DIR="$BASE_DIR/config"
+
+API_DIR="$BASE_DIR/api"
+
+SSH_DB="$DATA_DIR/ssh_accounts.db"
+
+SSH_BACKUP_DIR="$BACKUP_DIR/ssh"
+
+SSH_EXPORT_DIR="$EXPORT_DIR/ssh"
