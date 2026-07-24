@@ -121,7 +121,37 @@ create_ssh_user() {
     read -rp "Password     : " PASS
     read -rp "Expiry Days  : " DAYS
 
-    # Validation yahan hogi
+    if [ -z "$USER" ]; then
+    error "Username cannot be empty"
+    pause
+    return
+fi
+
+if [ -z "$PASS" ]; then
+    error "Password cannot be empty"
+    pause
+    return
+fi
+
+if ! [[ "$DAYS" =~ ^[0-9]+$ ]]; then
+    error "Expiry days must be a number"
+    pause
+    return
+fi
+
+if [ "$DAYS" -le 0 ]; then
+    error "Expiry days must be greater than 0"
+    pause
+    return
+fi
+
+if id "$USER" >/dev/null 2>&1; then
+    error "Username already exists"
+    pause
+    return
+fi
+
+success "Validation Successful"
 
     pause
 
