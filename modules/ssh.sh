@@ -173,8 +173,8 @@ if [ "$DAYS" -le 0 ]; then
     return
 fi
 
-if id "$USER" >/dev/null 2>&1; then
-    error "Username already exists"
+if ! system_user_exists "$USER"; then
+    error "SSH User not found"
     pause
     return
 fi
@@ -183,19 +183,13 @@ echo ""
 # Expiry Date
 EXPIRY=$(date -d "$DAYS days" +"%Y-%m-%d")
 
-useradd \
--e "$EXPIRY" \
--M \
--s /usr/sbin/nologin \
-"$USER"
-
 if [ $? -ne 0 ]; then
     error "Failed to create SSH user"
     pause
     return
 fi
 
-echo "$USER:$PASS" | chpasswd
+system_change_password "$USER" "$PASS"
 
 if [ $? -ne 0 ]; then
     error "Failed to set password"
@@ -378,7 +372,7 @@ delete_ssh_user() {
         return
     fi
 
-    userdel -f "$USER"
+    system_change_password "$USER" "$PASS"
 
     db_delete "$DB" "$USER"
 
@@ -407,8 +401,8 @@ change_ssh_password() {
         return
     fi
 
-    echo "$USER:$PASS" | chpasswd
-
+    system_change_password "$USER" "$PASS"
+    
     EXPIRY=$(db_get_field "$DB" "$USER" 3)
 
     db_update "$DB" "$USER" "$USER|$PASS|$EXPIRY"
@@ -482,7 +476,7 @@ show_online_users() {
     echo ""
 
     if who | grep -q .; then
-        who
+        system_online_users
     else
         echo "No SSH users are currently online."
     fi
@@ -582,7 +576,8 @@ edit_ssh_user() {
         return
     fi
 
-    usermod -l "$NEWUSER" "$OLDUSER"
+    system_rename_user "$OLDUSER" "$NEWUSER"
+    
     if [ $? -ne 0 ]; then
     error "Failed to rename user"
     pause
