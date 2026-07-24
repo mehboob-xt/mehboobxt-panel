@@ -6,9 +6,15 @@ source "$SCRIPT_DIR/../core/common.sh"
 source "$SCRIPT_DIR/../core/colors.sh"
 source "$SCRIPT_DIR/../core/config.sh"
 
+DB="$SSH_DB"
+
+BACKUP="$SSH_BACKUP_DIR"
+
+EXPORT="$SSH_EXPORT_DIR"
+
 init_ssh_manager() {
 
-    mkdir -p "$BASE"
+    mkdir -p "$BASE_DIR"
     mkdir -p "$BACKUP"
     mkdir -p "$EXPORT"
 
