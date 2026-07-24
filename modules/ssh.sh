@@ -225,7 +225,7 @@ list_ssh_users() {
     echo "========== SSH Users =========="
     echo ""
 
-    if [ ! -s "$DB" ]; then
+    if db_empty "$DB"; then
         error "No SSH users found"
         pause
         return
@@ -334,7 +334,7 @@ renew_ssh_user() {
     read -rp "Username     : " USER
     read -rp "Extra Days   : " DAYS
 
-    if ! grep -q "^$USER|" "$DB"; then
+    if [ -z "$(db_read "$DB" "$USER")" ]; then
         error "SSH User not found"
         pause
         return
@@ -350,8 +350,8 @@ renew_ssh_user() {
 
     usermod -e "$EXPIRY" "$USER"
 
-    PASS=$(grep "^$USER|" "$DB" | cut -d'|' -f2)
-
+    PASS=$(db_get_field "$DB" "$USER" 2)
+    
     db_update "$DB" "$USER" "$USER|$PASS|$EXPIRY"
 
     echo ""
@@ -409,7 +409,7 @@ change_ssh_password() {
 
     echo "$USER:$PASS" | chpasswd
 
-    EXPIRY=$(grep "^$USER|" "$DB" | cut -d'|' -f3)
+    EXPIRY=$(db_get_field "$DB" "$USER" 3)
 
     db_update "$DB" "$USER" "$USER|$PASS|$EXPIRY"
 
@@ -499,7 +499,7 @@ ssh_statistics() {
     echo "========== SSH Statistics =========="
     echo ""
 
-    TOTAL=$(wc -l < "$DB")
+    TOTAL=$(db_count "$DB")
 
     ONLINE=$(who | awk '{print $1}' | sort -u | wc -l)
 
@@ -589,8 +589,9 @@ edit_ssh_user() {
     return
     fi
 
-    PASS=$(grep "^$OLDUSER|" "$DB" | cut -d'|' -f2)
-    EXPIRY=$(grep "^$OLDUSER|" "$DB" | cut -d'|' -f3)
+    PASS=$(db_get_field "$DB" "$OLDUSER" 2)
+    
+    EXPIRY=$(db_get_field "$DB" "$OLDUSER" 3)
 
     db_update "$DB" "$OLDUSER" "$NEWUSER|$PASS|$EXPIRY"
 
@@ -609,7 +610,7 @@ export_ssh_config() {
 
     read -rp "Username : " USER
 
-    DATA=$(grep "^$USER|" "$DB")
+    DATA=$(db_read "$DB" "$USER")
 
     if [ -z "$DATA" ]; then
         error "SSH User not found"
