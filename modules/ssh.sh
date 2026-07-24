@@ -521,7 +521,7 @@ backup_ssh_db() {
 
     FILE="$BACKUP/ssh_backup_$(date +%Y%m%d_%H%M%S).db"
 
-    if db_backup "$DB" "$FILE" then
+    if db_backup "$DB" "$FILE"; then
     success "Backup Created"
 else
     error "Backup Failed"
@@ -556,7 +556,7 @@ restore_ssh_db() {
         return
     fi
 
-    if db_restore "$BACKUP/$FILE" "$DB" then
+    if db_restore "$BACKUP/$FILE" "$DB"; then
     success "Database Restored"
 else
     error "Restore Failed"
