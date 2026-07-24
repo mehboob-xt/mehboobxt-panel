@@ -13,7 +13,11 @@ db_add() {
     local FILE="$1"
     local DATA="$2"
 
-    echo "$DATA" >> "$FILE"
+    grep -q "^$(echo "$DATA" | cut -d'|' -f1)|" "$FILE" && return 1
+
+echo "$DATA" >> "$FILE" || return 1
+
+return 0
 
 }
 
@@ -50,9 +54,11 @@ db_update() {
     local QUERY="$2"
     local DATA="$3"
 
-    sed -i "/^$QUERY|/d" "$FILE"
+    sed -i "/^$QUERY|/d" "$FILE" || return 1
 
-    echo "$DATA" >> "$FILE"
+echo "$DATA" >> "$FILE" || return 1
+
+return 0
 
 }
 
@@ -61,7 +67,9 @@ db_backup() {
     local FILE="$1"
     local DEST="$2"
 
-    cp "$FILE" "$DEST"
+    cp "$FILE" "$DEST" || return 1
+
+return 0
 
 }
 
@@ -70,7 +78,9 @@ db_restore() {
     local SRC="$1"
     local DEST="$2"
 
-    cp "$SRC" "$DEST"
+    cp "$SRC" "$DEST" || return 1
+
+return 0
 
 }
 db_read() {
