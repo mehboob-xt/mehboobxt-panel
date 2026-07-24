@@ -6,12 +6,6 @@ source "$SCRIPT_DIR/../core/common.sh"
 source "$SCRIPT_DIR/../core/colors.sh"
 source "$SCRIPT_DIR/../core/config.sh"
 
-BASE="/etc/mehboobxt"
-
-DB="$BASE/ssh_accounts.db"
-BACKUP="$BASE/backup/ssh"
-EXPORT="$BASE/export/ssh"
-
 init_ssh_manager() {
 
     mkdir -p "$BASE"
