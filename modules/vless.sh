@@ -118,11 +118,12 @@ fi
 UUID=$(cat /proc/sys/kernel/random/uuid)
 
 DB="/etc/mehboobxt/vless_accounts.db"
-DOMAIN="tech.mehboobxt.ggff.net"
-PORT="443"
-TYPE="ws"
-SECURITY="tls"
-PATH="/vless"
+
+DOMAIN="$VLESS_DOMAIN"
+PORT="$VLESS_PORT"
+TYPE="$VLESS_NETWORK"
+SECURITY="$VLESS_SECURITY"
+PATH="$VLESS_PATH"
 SNI="$DOMAIN"
 
 mkdir -p /etc/mehboobxt
@@ -234,11 +235,11 @@ copy_vless_link() {
 
     DB="/etc/mehboobxt/vless_accounts.db"
 
-    DOMAIN="tech.mehboobxt.ggff.net"
-    PORT="443"
-    TYPE="ws"
-    SECURITY="tls"
-    PATH="/vless"
+    DOMAIN="$VLESS_DOMAIN"
+    PORT="$VLESS_PORT"
+    TYPE="$VLESS_NETWORK"
+    SECURITY="$VLESS_SECURITY"
+    PATH="$VLESS_PATH"
     SNI="$DOMAIN"
 
     read -rp "Username : " user
@@ -321,11 +322,11 @@ show_vless_user() {
 
     DB="/etc/mehboobxt/vless_accounts.db"
 
-    DOMAIN="tech.mehboobxt.ggff.net"
-    PORT="443"
-    TYPE="ws"
-    SECURITY="tls"
-    PATH="/vless"
+    DOMAIN="$VLESS_DOMAIN"
+    PORT="$VLESS_PORT"
+    TYPE="$VLESS_NETWORK"
+    SECURITY="$VLESS_SECURITY"
+    PATH="$VLESS_PATH"
     SNI="$DOMAIN"
 
     read -rp "Username : " user
@@ -598,11 +599,11 @@ export_vless_config() {
     DB="/etc/mehboobxt/vless_accounts.db"
     EXPORT_DIR="/etc/mehboobxt/export"
 
-    DOMAIN="tech.mehboobxt.ggff.net"
-    PORT="443"
-    TYPE="ws"
-    SECURITY="tls"
-    PATH="/vless"
+    DOMAIN="$VLESS_DOMAIN"
+    PORT="$VLESS_PORT"
+    TYPE="$VLESS_NETWORK"
+    SECURITY="$VLESS_SECURITY"
+    PATH="$VLESS_PATH"
     SNI="$DOMAIN"
 
     mkdir -p "$EXPORT_DIR"
