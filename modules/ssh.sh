@@ -1,6 +1,24 @@
 #!/bin/bash
 
+init_ssh_manager() {
+
+BASE="/etc/mehboobxt"
+
+DB="$BASE/ssh_accounts.db"
+BACKUP="$BASE/backup/ssh"
+EXPORT="$BASE/export/ssh"
+
+mkdir -p "$BASE"
+mkdir -p "$BACKUP"
+mkdir -p "$EXPORT"
+
+touch "$DB"
+
+}
+
 ssh_menu() {
+
+init_ssh_manager
 
 while true
 do
@@ -89,5 +107,78 @@ esac
 # Menu yahan hoga
 
 done
+
+}
+
+create_ssh_user() {
+
+    header
+
+    echo "Create SSH User"
+    echo ""
+
+    read -rp "Username     : " USER
+    read -rp "Password     : " PASS
+    read -rp "Expiry Days  : " DAYS
+
+    # Validation yahan hogi
+
+    pause
+
+}
+
+list_ssh_users() {
+
+}
+
+show_ssh_user() {
+
+}
+
+search_ssh_user() {
+
+}
+
+renew_ssh_user() {
+
+}
+
+delete_ssh_user() {
+
+}
+
+change_ssh_password() {
+
+}
+
+lock_ssh_user() {
+
+}
+
+unlock_ssh_user() {
+
+}
+
+show_online_users() {
+
+}
+
+ssh_statistics() {
+
+}
+
+backup_ssh_db() {
+
+}
+
+restore_ssh_db() {
+
+}
+
+edit_ssh_user() {
+
+}
+
+export_ssh_config() {
 
 }
