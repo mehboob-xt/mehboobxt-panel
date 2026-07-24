@@ -1,18 +1,18 @@
 #!/bin/bash
 
-init_ssh_manager() {
-
 BASE="/etc/mehboobxt"
 
 DB="$BASE/ssh_accounts.db"
 BACKUP="$BASE/backup/ssh"
 EXPORT="$BASE/export/ssh"
 
-mkdir -p "$BASE"
-mkdir -p "$BACKUP"
-mkdir -p "$EXPORT"
+init_ssh_manager() {
 
-touch "$DB"
+    mkdir -p "$BASE"
+    mkdir -p "$BACKUP"
+    mkdir -p "$EXPORT"
+
+    touch "$DB"
 
 }
 
@@ -50,48 +50,63 @@ read -rp "Select Option : " option
 case $option in
 
 1)
+create_ssh_user
 ;;
 
 2)
+list_ssh_users
 ;;
 
 3)
+show_ssh_user
 ;;
 
 4)
+search_ssh_user
 ;;
 
 5)
+renew_ssh_user
 ;;
 
 6)
+delete_ssh_user
 ;;
 
 7)
+change_ssh_password
 ;;
 
 8)
+lock_ssh_user
 ;;
 
 9)
+unlock_ssh_user
 ;;
 
 10)
+show_online_users
 ;;
 
 11)
+ssh_statistics
 ;;
 
 12)
+backup_ssh_db
 ;;
 
 13)
+restore_ssh_db
 ;;
 
 14)
+edit_ssh_user
 ;;
 
 15)
+export_ssh_config
 ;;
 
 16)
@@ -152,7 +167,6 @@ if id "$USER" >/dev/null 2>&1; then
 fi
 
 echo ""
-# Create Linux SSH User
 # Expiry Date
 EXPIRY=$(date -d "$DAYS days" +"%Y-%m-%d")
 
@@ -227,14 +241,9 @@ read -rp "Username : " USER
     IFS="|" read -r USER PASS EXPIRY <<< "$DATA"
 
     echo ""
-    success "SSH User Found"
-    echo ""
+success "SSH User Found"
 
-    echo "Username : $USER"
-    echo "Password : $PASS"
-    echo "Expiry   : $EXPIRY"
-    
-    echo ""
+echo ""
 echo "========== SSH User =========="
 echo ""
 echo "Username : $USER"
@@ -242,7 +251,8 @@ echo "Password : $PASS"
 echo "Expiry   : $EXPIRY"
 echo "=============================="
 echo ""
-    pause
+
+pause
 
 }
 
