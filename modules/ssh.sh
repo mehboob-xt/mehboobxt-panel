@@ -176,9 +176,22 @@ useradd \
 -s /usr/sbin/nologin \
 "$USER"
 
+if [ $? -ne 0 ]; then
+    error "Failed to create SSH user"
+    pause
+    return
+fi
+
 echo "$USER:$PASS" | chpasswd
 
+if [ $? -ne 0 ]; then
+    error "Failed to set password"
+    pause
+    return
+fi
+
 echo "$USER|$PASS|$EXPIRY" >> "$DB"
+
 
 echo ""
 success "SSH User Created Successfully"
@@ -497,9 +510,13 @@ backup_ssh_db() {
 
     FILE="$BACKUP/ssh_backup_$(date +%Y%m%d_%H%M%S).db"
 
-    cp "$DB" "$FILE"
-
+    if cp "$DB" "$FILE"; then
     success "Backup Created"
+else
+    error "Backup Failed"
+fi
+
+    
 
     echo ""
     echo "Saved To:"
@@ -528,9 +545,11 @@ restore_ssh_db() {
         return
     fi
 
-    cp "$BACKUP/$FILE" "$DB"
-
+    if cp "$BACKUP/$FILE" "$DB"; then
     success "Database Restored"
+else
+    error "Restore Failed"
+fi
 
     pause
 
@@ -553,6 +572,11 @@ edit_ssh_user() {
     fi
 
     usermod -l "$NEWUSER" "$OLDUSER"
+    if [ $? -ne 0 ]; then
+    error "Failed to rename user"
+    pause
+    return
+    fi
 
     PASS=$(grep "^$OLDUSER|" "$DB" | cut -d'|' -f2)
     EXPIRY=$(grep "^$OLDUSER|" "$DB" | cut -d'|' -f3)
@@ -595,7 +619,13 @@ Expiry   : $EXPIRY
 ===================================
 EOF
 
-    success "Config Exported"
+if [ ! -f "$FILE" ]; then
+    error "Export Failed"
+    pause
+    return
+fi
+
+success "Config Exported"
 
     echo ""
     echo "Saved To:"
