@@ -177,8 +177,6 @@ echo "Expiry   : $EXPIRY"
 pause
 # Create Linux SSH User
 
-    pause
-
 }
 
 list_ssh_users() {
@@ -210,15 +208,7 @@ show_ssh_user() {
 
     header
 
-    echo ""
-echo "========== SSH User =========="
-echo ""
-echo "Username : $USER"
-echo "Password : $PASS"
-echo "Expiry   : $EXPIRY"
-echo "=============================="
-echo ""
-    read -rp "Username : " USER
+read -rp "Username : " USER
 
     if [ ! -f "$DB" ]; then
         error "Database not found"
@@ -243,7 +233,15 @@ echo ""
     echo "Username : $USER"
     echo "Password : $PASS"
     echo "Expiry   : $EXPIRY"
-
+    
+    echo ""
+echo "========== SSH User =========="
+echo ""
+echo "Username : $USER"
+echo "Password : $PASS"
+echo "Expiry   : $EXPIRY"
+echo "=============================="
+echo ""
     pause
 
 }
