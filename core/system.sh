@@ -98,3 +98,9 @@ system_online_count() {
     who | wc -l
 
 }
+
+system_online_users() {
+
+    who
+
+}
