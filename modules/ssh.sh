@@ -6,6 +6,7 @@ source "$SCRIPT_DIR/../core/common.sh"
 source "$SCRIPT_DIR/../core/colors.sh"
 source "$SCRIPT_DIR/../core/config.sh"
 source "$SCRIPT_DIR/../core/database.sh"
+source "$SCRIPT_DIR/../core/system.sh"
 
 DB="$SSH_DB"
 
