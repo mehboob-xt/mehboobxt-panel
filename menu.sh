@@ -6,6 +6,11 @@ MODULE_DIR="$BASE_DIR/modules"
 source "$BASE_DIR/core/core.sh"
 source "$MODULE_DIR/ssh.sh"
 source "$MODULE_DIR/vless.sh"
+source "$MODULE_DIR/vmess.sh"
+source "$MODULE_DIR/trojan.sh"
+source "$MODULE_DIR/referral.sh"
+source "$MODULE_DIR/expiry.sh"
+
 while true
 do
 
@@ -13,10 +18,14 @@ header
 
 echo "1. SSH Manager"
 echo "2. VLESS Manager"
-echo "3. System Info"
-echo "4. Backup"
-echo "5. Update Panel"
-echo "6. Exit"
+echo "3. VMess Manager"
+echo "4. Trojan Manager"
+echo "5. Expiry Manager"
+echo "6. Referral Manager"
+echo "7. System Info"
+echo "8. Backup"
+echo "9. Update Panel"
+echo "10. Exit"
 
 echo ""
 
@@ -38,6 +47,22 @@ vless_menu
 ;;
 
 3)
+vmess_menu
+;;
+
+4)
+trojan_menu
+;;
+
+5)
+expiry_menu
+;;
+
+6)
+referral_menu
+;;
+
+7)
 
 echo ""
 echo "🖥 System Information"
@@ -51,7 +76,7 @@ sleep 3
 
 ;;
 
-4)
+8)
 
 echo ""
 echo "📦 Backup System"
@@ -66,7 +91,7 @@ sleep 3
 
 ;;
 
-5)
+9)
 
 if [ -f "$MODULE_DIR/update.sh" ]
 then
@@ -84,7 +109,7 @@ fi
 
 ;;
 
-6)
+10)
 
 echo "Bye 👋"
 exit
