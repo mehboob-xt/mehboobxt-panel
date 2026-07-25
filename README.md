@@ -1,46 +1,74 @@
 # 🚀 MehboobXT Panel
 
-<h2><img src="https://emojis.slackmojis.com/emojis/images/1531849430/4246/blob-sunglasses.gif?1531849430" width="30"/> Hello, I'm Mahboob XT! <img src="https://media.giphy.com/media/12oufCB0MyZ1Go/giphy.gif" width="50"></h2>
+<p align="center">
+  <img src="https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge" alt="Version">
+  <img src="https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go" alt="Go">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License">
+  <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" alt="Status">
+</p>
 
-![GitHub Snake Dark](https://raw.githubusercontent.com/Mahboob-A/Mahboob-A/main/dist/github-snake-dark.svg#gh-dark-mode-only)
+<p align="center">
+  <b>Enterprise Grade VPS Management Platform</b><br>
+  Powerful • Modern • Multi-Protocol • Premium Experience
+</p>
 
-Enterprise VPS Management Platform
+---
 
-Features:
-✅ SSH Manager
-✅ V2Ray VLESS Manager
-✅ VMess Support
-✅ Trojan Support
-✅ Web Panel
-✅ Account Generator
-✅ Backup System
-✅ Auto SSL
-✅ Multi VPS Support
+### 📖 About
 
-Roadmap:
-v1.0 Core Panel
-v1.5 Web Dashboard
-v2.0 API System
+**MehboobXT Panel** is a powerful and modern web-based control panel designed for managing VPS servers with advanced proxy and VPN protocols.  
+Built with performance and user experience in mind, it offers a clean interface and rich features for both personal and multi-user environments.
 
-### ⚙️ &nbsp;GitHub Analytics
+> **Note:** This project is intended for personal and educational use only.
 
-<table>
-  <tr>
-    <td>
-      <a href="https://github.com/mehboob-xt">
-        <img src="https://github-readme-stats-eight-theta.vercel.app/api?username=mehboob-xt&show_icons=true&theme=algolia&include_all_commits=true&count_private=true" width="350" alt="commit-stats" />
-      </a>
-    </td>
-    <td>
-      <img src="https://github-readme-stats-eight-theta.vercel.app/api/top-langs/?username=mehboob-xt&layout=compact&langs_count=8&theme=algolia" width="350" alt="top-languages" />
-    </td>
-  </tr>
-</table>
+---
 
-<br/>
+### ✨ Features
 
-<img src="https://github-readme-streak-stats.herokuapp.com/?user=mehboob-xt&theme=algolia" width="100%" alt="streak-stats" />
+- **Multi-Protocol Support**
+  - Trojan
+  - VLESS
+  - VMess
+  - Shadowsocks
+  - SSH Manager
 
-<br/>
+- **Modern Panel**
+  - Clean & Responsive Web UI
+  - Dark / Light Mode
+  - Real-time Traffic Monitoring
+  - Online Users Tracking
 
-<img src="https://github-profile-trophy.vercel.app/?username=mehboob-xt&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mehboob-xt"/>
+- **Advanced Management**
+  - Account Generator
+  - Traffic & Expiry Control
+  - IP Limit Support
+  - Multi VPS Support
+  - One-Click Backup & Restore
+
+- **Security & Automation**
+  - Auto SSL (Let's Encrypt)
+  - Fail2Ban Integration
+  - Telegram Bot Notifications
+  - Auto Restart & Health Check
+
+- **Extra Premium Features**
+  - Custom Config Generator (HTTP Custom + Dark Tunnel)
+  - FreeBasics / Payload Support
+  - Reseller System (Coming Soon)
+  - API Access
+
+---
+
+### 🛠️ Tech Stack
+
+- **Backend:** Go
+- **Frontend:** Vue.js 3 + Tailwind CSS
+- **Database:** SQLite / PostgreSQL
+- **Core:** Xray-core
+
+---
+
+### 🚀 Quick Start
+
+```bash
+bash <(curl -Ls https://raw.githubusercontent.com/mehboob-xt/mehboobxt-panel/main/install.sh)
