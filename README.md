@@ -28,13 +28,13 @@ v2.0 API System
   <tr>
     <td>
       <p>
-        <a href="https://github.com/Mehboob-XT">
-          <img src="https://api.vaunt.dev/v1/github/entities/Mehboob-XT/contributions?format=svg" width="350" title="Includes public contributions"/>
+        <a href="https://github.com/mehboob-xt">
+          <img src="https://api.vaunt.dev/v1/github/entities/Mahboob-A/contributions?format=svg" width="350" title="Includes public contributions"/>
         </a>
       </p>
     </td>
     <td>
-        <img src="https://raw.githubusercontent.com/Mehboob-XT/Mehboob-XT/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
+        <img src="https://raw.githubusercontent.com/Mahboob-A/Mahboob-A/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
     </td>
   </tr>
 </table>
@@ -43,16 +43,16 @@ v2.0 API System
   <tr>
     <td>
       <p>
-        <a href="https://github.com/Mehboob-XT">
-          <img src="https://github-readme-stats-eight-theta.vercel.app/api?username=Mehboob-XT&show_icons=true&theme=algolia&include_all_commits=true&count_private=true" width="250" alt="commit-stats" />
+        <a href="https://github.com/mehboob-xt">
+          <img src="https://github-readme-stats-eight-theta.vercel.app/api?username=Mahboob-A&show_icons=true&theme=algolia&include_all_commits=true&count_private=true" width="250" alt="commit-stats" />
         </a>
       </p>
     </td>
     <td>
-        <img src="https://github-readme-stats-eight-theta.vercel.app/api/top-langs/?username=Mehboob-XT&layout=compact&langs_count=8&theme=algolia" width="250" alt="top-languages" />
+        <img src="https://github-readme-stats-eight-theta.vercel.app/api/top-langs/?username=Mahboob-A&layout=compact&langs_count=8&theme=algolia" width="250" alt="top-languages" />
     </td>
     <td>
-       <img src="https://github-readme-streak-stats.herokuapp.com/?user=Mehboob-XT&layout=compact&langs_count=8&theme=algolia" width="250" alt="language_count" />
+       <img src="https://github-readme-streak-stats.herokuapp.com/?user=Mahboob-A&layout=compact&langs_count=8&theme=algolia" width="250" alt="language_count" />
     </td>
   </tr>
 </table>
@@ -60,6 +60,6 @@ v2.0 API System
 
 <br/>
 
-<img src="https://github-profile-trophy.vercel.app/?username=Mehboob-XT&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="Mehboob-XT"/>
+<img src="https://github-profile-trophy.vercel.app/?username=mahboob-a&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mehboob-xt"/>
 
 <br/>
