@@ -27,39 +27,20 @@ v2.0 API System
 <table>
   <tr>
     <td>
-      <p>
-        <a href="https://github.com/Mahboob-A">
-          <img src="https://api.vaunt.dev/v1/github/entities/Mahboob-A/contributions?format=svg" width="350" title="Includes public contributions"/>
-        </a>
-      </p>
+      <a href="https://github.com/mehboob-xt">
+        <img src="https://github-readme-stats-eight-theta.vercel.app/api?username=mehboob-xt&show_icons=true&theme=algolia&include_all_commits=true&count_private=true" width="350" alt="commit-stats" />
+      </a>
     </td>
     <td>
-        <img src="https://raw.githubusercontent.com/Mahboob-A/Mahboob-A/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
+      <img src="https://github-readme-stats-eight-theta.vercel.app/api/top-langs/?username=mehboob-xt&layout=compact&langs_count=8&theme=algolia" width="350" alt="top-languages" />
     </td>
   </tr>
 </table>
 
-<table>
-  <tr>
-    <td>
-      <p>
-        <a href="https://github.com/Mahboob-A">
-          <img src="https://github-readme-stats-eight-theta.vercel.app/api?username=Mahboob-A&show_icons=true&theme=algolia&include_all_commits=true&count_private=true" width="250" alt="commit-stats" />
-        </a>
-      </p>
-    </td>
-    <td>
-        <img src="https://github-readme-stats-eight-theta.vercel.app/api/top-langs/?username=Mahboob-A&layout=compact&langs_count=8&theme=algolia" width="250" alt="top-languages" />
-    </td>
-    <td>
-       <img src="https://github-readme-streak-stats.herokuapp.com/?user=Mahboob-A&layout=compact&langs_count=8&theme=algolia" width="250" alt="language_count" />
-    </td>
-  </tr>
-</table>
+<br/>
 
+<img src="https://github-readme-streak-stats.herokuapp.com/?user=mehboob-xt&theme=algolia" width="100%" alt="streak-stats" />
 
 <br/>
 
-<img src="https://github-profile-trophy.vercel.app/?username=mahboob-a&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mahboob-a"/>
-
-<br/>
+<img src="https://github-profile-trophy.vercel.app/?username=mehboob-xt&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mehboob-xt"/>
