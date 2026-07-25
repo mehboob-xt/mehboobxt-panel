@@ -28,13 +28,13 @@ v2.0 API System
   <tr>
     <td>
       <p>
-        <a href="https://github.com/mehboob-xt">
+        <a href="https://github.com/Mahboob-A">
           <img src="https://api.vaunt.dev/v1/github/entities/Mahboob-A/contributions?format=svg" width="350" title="Includes public contributions"/>
         </a>
       </p>
     </td>
     <td>
-        <img src="https://raw.githubusercontent.com/Mehboob-A/Mehboob-A/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
+        <img src="https://raw.githubusercontent.com/Mahboob-A/Mahboob-A/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
     </td>
   </tr>
 </table>
@@ -43,7 +43,7 @@ v2.0 API System
   <tr>
     <td>
       <p>
-        <a href="https://github.com/mehboob-xt">
+        <a href="https://github.com/Mahboob-A">
           <img src="https://github-readme-stats-eight-theta.vercel.app/api?username=Mahboob-A&show_icons=true&theme=algolia&include_all_commits=true&count_private=true" width="250" alt="commit-stats" />
         </a>
       </p>
@@ -60,6 +60,6 @@ v2.0 API System
 
 <br/>
 
-<img src="https://github-profile-trophy.vercel.app/?username=mehboob-xt&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mehboob-xt"/>
+<img src="https://github-profile-trophy.vercel.app/?username=mahboob-a&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mahboob-a"/>
 
 <br/>
