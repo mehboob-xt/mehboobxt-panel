@@ -1,6 +1,6 @@
-<div align="center">
-  
-  <img src="https://raw.githubusercontent.com/mehboob-xt/mehboobxt-panel/main/screenshots/banner.png" alt="Mehboob-XT Panel" width="420"/>
+<p align="center">
+  <img src="https://raw.githubusercontent.com/mehboob-xt/mehboobxt-panel/main/logo.png" alt="MehboobXT Panel" width="280">
+</p>
 
   <h1>Mehboob-XT Panel</h1>
   <p><strong>Premium • Powerful • Modern Xray Control Panel</strong></p>
