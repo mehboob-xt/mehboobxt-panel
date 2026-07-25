@@ -50,10 +50,15 @@ Built as a highly enhanced and feature-rich panel, MehboobXT adds broader protoc
 
 ---
 
-### 📸 Screenshots
+## 📸 Screenshots
 
-> Screenshots will be added soon.
+| Dashboard Overview | Add Inbound |
+|:---:|:---:|
+| ![Dashboard](screenshots/1-overview.webp) | ![Add Inbound](screenshots/2-add-inbound.webp) |
 
+| Add Client | Clients List |
+|:---:|:---:|
+| ![Add Client](screenshots/3-add-client.webp) | ![Clients](screenshots/4-clients.webp) |
 ---
 
 ### 🚀 Quick Start
