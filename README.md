@@ -34,7 +34,7 @@ v2.0 API System
       </p>
     </td>
     <td>
-        <img src="https://raw.githubusercontent.com/mehboob-xt/mehboob-xt/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
+        <img src="https://raw.githubusercontent.com/Mehboob-A/Mehboob-A/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
     </td>
   </tr>
 </table>
@@ -60,6 +60,6 @@ v2.0 API System
 
 <br/>
 
-<img src="https://github-profile-trophy.vercel.app/?username=mahboob-a&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mehboob-xt"/>
+<img src="https://github-profile-trophy.vercel.app/?username=mehboob-xt&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mehboob-xt"/>
 
 <br/>
