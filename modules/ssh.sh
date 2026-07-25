@@ -20,10 +20,6 @@ init_ssh_manager() {
 mkdir -p "$DATA_DIR"
 mkdir -p "$BACKUP_DIR"
 mkdir -p "$EXPORT_DIR"
-
-mkdir -p "$BACKUP"
-mkdir -p "$EXPORT"
-
     
 
     touch "$DB"
