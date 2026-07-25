@@ -6,6 +6,7 @@ source "$SCRIPT_DIR/../core/common.sh"
 source "$SCRIPT_DIR/../core/colors.sh"
 source "$SCRIPT_DIR/../core/config.sh"
 source "$SCRIPT_DIR/../core/database.sh"
+source "$SCRIPT_DIR/../core/config_generator.sh"
 
 DB="$TROJAN_DB"
 
@@ -621,17 +622,20 @@ generate_trojan_link() {
     PORT="${TROJAN_PORT:-443}"
     HOST="${TROJAN_HOST:-$SERVER}"
     PATH_WS="${TROJAN_WS_PATH:-/ws}"
+    
+case "$TYPE" in
 
-    case "$TYPE" in
-        TLS)
-            LINK="trojan://${PASSWORD}@${SERVER}:${PORT}?security=tls&type=ws&host=${HOST}&path=${PATH_WS}#${NAME}"
-            ;;
-        NON_TLS)
-            LINK="trojan://${PASSWORD}@${SERVER}:${PORT}?security=none&type=ws&host=${HOST}&path=${PATH_WS}#${NAME}"
-            ;;
-        TLS_PROXY)
-            LINK="trojan://${PASSWORD}@${SERVER}:${PORT}?security=tls&type=ws&host=${HOST}&path=${PATH_WS}&mode=proxy#${NAME}"
-            ;;
+    TLS)
+    LINK=$(generate_tls_config)
+;;
+
+NON_TLS)
+    LINK=$(generate_non_tls_config)
+;;
+
+TLS_PROXY)
+    LINK=$(generate_tls_proxy_config)
+;;
         *)
             error "Unknown Trojan type"
             pause
