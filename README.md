@@ -34,7 +34,7 @@ v2.0 API System
       </p>
     </td>
     <td>
-        <img src="https://raw.githubusercontent.com/Mahboob-A/Mahboob-A/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
+        <img src="https://raw.githubusercontent.com/mehboob-xt/mehboob-xt/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
     </td>
   </tr>
 </table>
