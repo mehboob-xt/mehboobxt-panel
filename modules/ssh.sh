@@ -10,7 +10,7 @@ source "$SCRIPT_DIR/../core/system.sh"
 
 DB="$SSH_DB"
 BACKUP="$SSH_BACKUP_DIR"
-EXPORT="$SSH_EXPORT_DIR""
+EXPORT="$SSH_EXPORT_DIR"
 
 init_ssh_manager() {
 
