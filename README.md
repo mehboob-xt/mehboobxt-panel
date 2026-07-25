@@ -3,10 +3,6 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/mehboob-xt/mehboobxt-panel/main/logo.png" alt="MehboobXT Panel" width="280">
-</p>
-
-<p align="center">
   <a href="#"><img src="https://img.shields.io/badge/English-blue?style=flat-square"></a>
   <a href="#"><img src="https://img.shields.io/badge/اردو-green?style=flat-square"></a>
   <a href="#"><img src="https://img.shields.io/badge/فارسی-red?style=flat-square"></a>
