@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/MehboobXT%20Panel-Premium-blueviolet?style=for-the-badge&logo=github&logoColor=white" alt="MehboobXT Panel" height="70">
+  <img src="https://raw.githubusercontent.com/mehboob-xt/mehboobxt-panel/main/logo.png" alt="MehboobXT Panel" width="280">
 </p>
 
 <p align="center">
@@ -27,34 +27,6 @@ Built as a highly enhanced and feature-rich panel, MehboobXT adds broader protoc
 
 ---
 
-
-### ⚙️ &nbsp;GitHub Analytics
-
-<table>
-  <tr>
-    <td>
-      <a href="https://github.com/mehboob-xt">
-        <img src="https://github-readme-stats-eight-theta.vercel.app/api?username=mehboob-xt&show_icons=true&theme=algolia&include_all_commits=true&count_private=true" width="350" alt="commit-stats" />
-      </a>
-    </td>
-    <td>
-      <img src="https://github-readme-stats-eight-theta.vercel.app/api/top-langs/?username=mehboob-xt&layout=compact&langs_count=8&theme=algolia" width="350" alt="top-languages" />
-    </td>
-  </tr>
-</table>
-
-<br/>
-
-<img src="https://github-readme-streak-stats.herokuapp.com/?user=mehboob-xt&theme=algolia" width="100%" alt="streak-stats" />
-
-<br/>
-
-<img src="https://github-profile-trophy.vercel.app/?username=mehboob-xt&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mehboob-xt"/>
-
-
-
-
-
 ### ✨ Features
 
 - **Multi-protocol inbounds** — VLESS, VMess, Trojan, Shadowsocks, WireGuard, Hysteria2, SSH, HTTP, SOCKS (Mixed), and more.
@@ -80,7 +52,7 @@ Built as a highly enhanced and feature-rich panel, MehboobXT adds broader protoc
 
 ### 📸 Screenshots
 
-> Click to expand (Screenshots will be added soon)
+> Screenshots will be added soon.
 
 ---
 
