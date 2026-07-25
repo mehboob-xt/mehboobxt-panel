@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="https://img.shields.io/badge/MehboobXT%20Panel-Premium-blueviolet?style=for-the-badge&logo=github&logoColor=white" alt="MehboobXT Panel" height="70">
+</p>
+
+<p align="center">
   <img src="https://raw.githubusercontent.com/mehboob-xt/mehboobxt-panel/main/logo.png" alt="MehboobXT Panel" width="280">
 </p>
 
