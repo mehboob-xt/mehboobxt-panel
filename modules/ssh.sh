@@ -139,6 +139,11 @@ create_ssh_user() {
 
     header
 
+echo "DB=$DB"
+echo "SSH_DB=$SSH_DB"
+echo "DATA_DIR=$DATA_DIR"
+read
+
     echo "Create SSH User"
     echo ""
 
