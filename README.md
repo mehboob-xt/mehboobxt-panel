@@ -21,3 +21,45 @@ Roadmap:
 v1.0 Core Panel
 v1.5 Web Dashboard
 v2.0 API System
+
+### ⚙️ &nbsp;GitHub Analytics
+
+<table>
+  <tr>
+    <td>
+      <p>
+        <a href="https://github.com/Mahboob-A">
+          <img src="https://api.vaunt.dev/v1/github/entities/Mahboob-A/contributions?format=svg" width="350" title="Includes public contributions"/>
+        </a>
+      </p>
+    </td>
+    <td>
+        <img src="https://raw.githubusercontent.com/Mahboob-A/Mahboob-A/main/dist/nightcoding.gif" width="350" alt="Night-Coding"/>
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td>
+      <p>
+        <a href="https://github.com/Mahboob-A">
+          <img src="https://github-readme-stats-eight-theta.vercel.app/api?username=Mahboob-A&show_icons=true&theme=algolia&include_all_commits=true&count_private=true" width="250" alt="commit-stats" />
+        </a>
+      </p>
+    </td>
+    <td>
+        <img src="https://github-readme-stats-eight-theta.vercel.app/api/top-langs/?username=Mahboob-A&layout=compact&langs_count=8&theme=algolia" width="250" alt="top-languages" />
+    </td>
+    <td>
+       <img src="https://github-readme-streak-stats.herokuapp.com/?user=Mahboob-A&layout=compact&langs_count=8&theme=algolia" width="250" alt="language_count" />
+    </td>
+  </tr>
+</table>
+
+
+<br/>
+
+<img src="https://github-profile-trophy.vercel.app/?username=mahboob-a&no-frame=true&theme=algolia&title=MultiLanguage,Commits,PullRequest,Repositories,Stars,Followers,Issues,Reviews" alt="mahboob-a"/>
+
+<br/>
