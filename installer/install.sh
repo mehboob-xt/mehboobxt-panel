@@ -115,57 +115,85 @@ rm -rf /tmp/mehboobxt-installer
 trap cleanup EXIT
 trap 'error "Installation failed."; exit 1' ERR
 
+run_module() {
+
+    local module="$1"
+
+    [[ -f "$INSTALLER_DIR/$module" ]] || {
+        error "$module not found."
+        exit 1
+    }
+
+    info "Running $module"
+
+    bash "$INSTALLER_DIR/$module"
+
+}
 
 main() {
 
     banner
+    
+    exec 200>"$LOCK_FILE"
 
-    if [[ -f "$LOCK_FILE" ]]; then
-    error "Installer is already running."
+    command -v flock >/dev/null || {
+    error "flock command not found."
     exit 1
-fi
+}
 
-touch "$LOCK_FILE"
+flock -n 200 || {
+
+    error "Installer is already running."
+
+    exit 1
+}
 
     check_root
 
     step "Checking Operating System"
-    bash "$INSTALLER_DIR/check_os.sh"
+    run_module check_os.sh
 
     step "Checking Network"
-    bash "$INSTALLER_DIR/check_network.sh"
-
+    run_module check_network.sh
+    
     step "Updating System"
-    bash "$INSTALLER_DIR/system_update.sh"
+    run_module system_update.sh
 
     step "Installing Dependencies"
-    bash "$INSTALLER_DIR/install_dependencies.sh"
+    run_module install_dependencies.sh
 
     step "Creating Directories"
-    bash "$INSTALLER_DIR/create_directories.sh"
+    run_module create_directories.sh
 
     step "Creating Databases"
-    bash "$INSTALLER_DIR/create_databases.sh"
+    run_module create_databases.sh
 
     step "Creating Configuration"
-    bash "$INSTALLER_DIR/create_config.sh"
+    run_module create_config.sh
 
     step "Downloading Panel"
-    bash "$INSTALLER_DIR/download_panel.sh"
+    run_module download_panel.sh
 
     step "Setting Permissions"
-    bash "$INSTALLER_DIR/set_permissions.sh"
+    run_module set_permissions.sh
 
     step "Creating Service"
-    bash "$INSTALLER_DIR/create_service.sh"
+    run_module create_service.sh
 
     step "Creating Commands"
-    bash "$INSTALLER_DIR/create_commands.sh"
+    run_module create_commands.sh
 
     step "Finishing Installation"
-    bash "$INSTALLER_DIR/finish_install.sh"
+    run_module finish_install.sh
 
-    success "MehboobXT installed successfully."
+    echo
+    
+success "MehboobXT Premium Panel installed successfully."
+log "Installation completed successfully."
+
+info "Command : mehboobxt"
+info "Logs    : $LOG_FILE"
+echo
 
 }
 
