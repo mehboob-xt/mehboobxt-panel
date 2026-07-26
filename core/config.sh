@@ -24,4 +24,7 @@ API_DIR="$BASE_DIR/api"
 
 SSH_DB="$DATA_DIR/ssh_accounts.db"
 
+BACKUP="$SSH_BACKUP_DIR"
+EXPORT="$SSH_EXPORT_DIR"
+
 VLESS_DB="$DATA_DIR/vless_accounts.db"
