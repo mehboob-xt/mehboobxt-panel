@@ -124,7 +124,7 @@ run_module() {
         exit 1
     }
 
-    info "Running $module"
+    info "Running module: $module"
 
 if ! bash "$INSTALLER_DIR/$module"; then
     error "$module failed."
