@@ -1,88 +1,60 @@
 #!/bin/bash
 
 set -e
-set -u
-set -o pipefail
 
-info() {
-    echo -e "\033[1;34m[INFO]\033[0m $1"
-}
+source "$(dirname "$0")/../core/config.sh"
+source "$(dirname "$0")/../core/logger.sh"
 
-success() {
-    echo -e "\033[1;32m[ OK ]\033[0m $1"
-}
-
-error() {
-    echo -e "\033[1;31m[FAIL]\033[0m $1"
-}
-
-########################################
-# Root Check
-########################################
-
-if [[ $EUID -ne 0 ]]; then
-    error "Please run as root."
-    exit 1
-fi
-
-########################################
-# Directories
-########################################
+info "Creating MehboobXT directories..."
 
 DIRS=(
-    /etc/mehboobxt
-    /etc/mehboobxt/config
-    /etc/mehboobxt/modules
-    /etc/mehboobxt/backups
+    "$BASE_DIR"
+    "$PANEL_DIR"
+    "$CONFIG_DIR"
+    "$DATA_DIR"
+    "$LOG_DIR"
+    "$TEMP_DIR"
+    "$BACKUP_DIR"
+    "$EXPORT_DIR"
+    "$API_DIR"
+    "$MODULE_DIR"
+    "$CORE_DIR"
+    "$ASSETS_DIR"
+    "$TEMPLATES_DIR"
+    "$CACHE_DIR"
+    "$SESSION_DIR"
 
-    /usr/local/mehboobxt
-    /usr/local/mehboobxt/bin
-    /usr/local/mehboobxt/core
-    /usr/local/mehboobxt/modules
-    /usr/local/mehboobxt/assets
-    /usr/local/mehboobxt/templates
-    /usr/local/mehboobxt/logs
-    /usr/local/mehboobxt/tmp
+    "$SSH_BACKUP_DIR"
+    "$VLESS_BACKUP_DIR"
+    "$VMESS_BACKUP_DIR"
+    "$TROJAN_BACKUP_DIR"
 
-    /var/lib/mehboobxt
-    /var/lib/mehboobxt/database
-    /var/lib/mehboobxt/accounts
-
-    /var/log/mehboobxt
+    "$SSH_EXPORT_DIR"
+    "$VLESS_EXPORT_DIR"
+    "$VMESS_EXPORT_DIR"
+    "$TROJAN_EXPORT_DIR"
 )
 
-########################################
-# Create Directories
-########################################
-
 for dir in "${DIRS[@]}"; do
-
-    if [[ -d "$dir" ]]; then
-        success "$dir already exists."
-        continue
+    if [[ ! -d "$dir" ]]; then
+        mkdir -p "$dir"
+        success "Created: $dir"
+    else
+        warning "Exists: $dir"
     fi
-
-    info "Creating $dir"
-
-    mkdir -p "$dir"
-
-    success "$dir created."
-
 done
 
-########################################
-# Permissions
-########################################
+chmod 755 "$BASE_DIR"
+chmod 755 "$PANEL_DIR"
+chmod 700 "$CONFIG_DIR"
+chmod 700 "$DATA_DIR"
+chmod 755 "$LOG_DIR"
+chmod 700 "$BACKUP_DIR"
+chmod 755 "$EXPORT_DIR"
+chmod 755 "$TEMP_DIR"
+chmod 700 "$SESSION_DIR"
+chmod 755 "$CACHE_DIR"
 
-chmod -R 755 /usr/local/mehboobxt
-chmod -R 755 /etc/mehboobxt
-chmod -R 755 /var/lib/mehboobxt
-chmod -R 755 /var/log/mehboobxt
-
-########################################
-# Finish
-########################################
-
-success "Directories created successfully."
+success "Directory structure created successfully."
 
 exit 0
