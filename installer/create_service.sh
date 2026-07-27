@@ -1,107 +1,32 @@
 #!/bin/bash
 
 set -e
-set -u
-set -o pipefail
 
-info() {
-    echo -e "\033[1;34m[INFO]\033[0m $1"
-}
+source "$(dirname "$0")/../core/config.sh"
+source "$(dirname "$0")/../core/logger.sh"
 
-success() {
-    echo -e "\033[1;32m[ OK ]\033[0m $1"
-}
+info "Creating MehboobXT systemd service..."
 
-error() {
-    echo -e "\033[1;31m[FAIL]\033[0m $1"
-}
-
-########################################
-# Root Check
-########################################
-
-if [[ $EUID -ne 0 ]]; then
-    error "Please run as root."
-    exit 1
-fi
-
-SERVICE_FILE="/etc/systemd/system/mehboobxt.service"
-
-########################################
-# Already Exists
-########################################
-
-if [[ -f "$SERVICE_FILE" ]]; then
-    success "Service already exists."
-    exit 0
-fi
-
-########################################
-# Create Service
-########################################
-
-info "Creating systemd service..."
-
-cat > "$SERVICE_FILE" <<EOF
+cat > /etc/systemd/system/mehboobxt.service <<EOF
 [Unit]
-Description=MehboobXT Premium Panel
+Description=MehboobXT Panel
 After=network.target
 
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/usr/local/mehboobxt
-ExecStart=/usr/local/mehboobxt/mehboobxt
-Restart=always
+WorkingDirectory=$PANEL_DIR
+ExecStart=/bin/bash $PANEL_DIR/menu.sh
+Restart=on-failure
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-########################################
-# Permissions
-########################################
-
-chmod 644 "$SERVICE_FILE"
-
-########################################
-# Reload systemd
-########################################
-
 systemctl daemon-reload
+systemctl enable mehboobxt.service >/dev/null 2>&1 || true
 
-########################################
-# Enable Service
-########################################
-
-systemctl enable mehboobxt.service
-
-success "Service enabled."
-
-########################################
-# Start Service
-########################################
-
-systemctl restart mehboobxt.service || true
-
-success "Service started."
-
-########################################
-# Verify
-########################################
-
-if systemctl is-enabled mehboobxt.service >/dev/null 2>&1; then
-    success "Service verified."
-else
-    error "Service verification failed."
-    exit 1
-fi
-
-########################################
-# Finish
-########################################
-
-success "System service created successfully."
+success "Systemd service created successfully."
 
 exit 0
