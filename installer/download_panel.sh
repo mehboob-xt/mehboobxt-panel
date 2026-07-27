@@ -1,92 +1,26 @@
 #!/bin/bash
 
 set -e
-set -u
-set -o pipefail
 
-info() {
-    echo -e "\033[1;34m[INFO]\033[0m $1"
-}
+source "$(dirname "$0")/../core/config.sh"
+source "$(dirname "$0")/../core/logger.sh"
 
-success() {
-    echo -e "\033[1;32m[ OK ]\033[0m $1"
-}
+info "Installing MehboobXT Panel..."
 
-error() {
-    echo -e "\033[1;31m[FAIL]\033[0m $1"
-}
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 
-########################################
-# Root Check
-########################################
+mkdir -p "$PANEL_DIR"
 
-if [[ $EUID -ne 0 ]]; then
-    error "Please run as root."
-    exit 1
-fi
+cp -r "$SCRIPT_DIR/core" "$PANEL_DIR/"
+cp -r "$SCRIPT_DIR/modules" "$PANEL_DIR/" 2>/dev/null || true
+cp -r "$SCRIPT_DIR/assets" "$PANEL_DIR/" 2>/dev/null || true
+cp -r "$SCRIPT_DIR/templates" "$PANEL_DIR/" 2>/dev/null || true
+cp -r "$SCRIPT_DIR/api" "$PANEL_DIR/" 2>/dev/null || true
 
-########################################
-# Variables
-########################################
+cp "$SCRIPT_DIR/menu.sh" "$PANEL_DIR/" 2>/dev/null || true
 
-REPO_URL="https://github.com/mehboob-xt/mehboobxt-panel.git"
+find "$PANEL_DIR" -type f -name "*.sh" -exec chmod +x {} \;
 
-INSTALL_DIR="/usr/local/mehboobxt"
-
-TEMP_DIR="/tmp/mehboobxt-download"
-
-########################################
-# Cleanup
-########################################
-
-rm -rf "$TEMP_DIR"
-
-########################################
-# Clone Repository
-########################################
-
-info "Downloading MehboobXT Panel..."
-
-if ! git clone "$REPO_URL" "$TEMP_DIR"; then
-    error "Git clone failed."
-    exit 1
-fi
-
-success "Repository downloaded."
-
-########################################
-# Install Files
-########################################
-
-mkdir -p "$INSTALL_DIR"
-
-cp -rf "$TEMP_DIR"/* "$INSTALL_DIR"/
-
-success "Panel files copied."
-
-########################################
-# Cleanup
-########################################
-
-rm -rf "$TEMP_DIR"
-
-success "Temporary files removed."
-
-########################################
-# Verify
-########################################
-
-if [[ ! -f "$INSTALL_DIR/menu.sh" ]]; then
-    error "Panel verification failed."
-    exit 1
-fi
-
-success "Panel verified."
-
-########################################
-# Finish
-########################################
-
-success "Panel downloaded successfully."
+success "Panel files installed successfully."
 
 exit 0
