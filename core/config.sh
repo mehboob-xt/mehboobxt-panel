@@ -1,30 +1,131 @@
-#!/bin/bash
-
-CONFIG_FILE="./config/panel.conf"
-
-if [ -f "$CONFIG_FILE" ]; then
-    source "$CONFIG_FILE"
-fi
+PANEL_VERSION="1.0.0"
+PANEL_AUTHOR="MehboobXT"
+PANEL_EDITION="Premium"
 
 BASE_DIR="/etc/mehboobxt"
 
-DATA_DIR="$BASE_DIR/data"
-
-BACKUP_DIR="$BASE_DIR/backup"
-
-EXPORT_DIR="$BASE_DIR/export"
-
-LOG_DIR="$BASE_DIR/logs"
-
-TEMP_DIR="$BASE_DIR/tmp"
+PANEL_DIR="/usr/local/mehboobxt"
 
 CONFIG_DIR="$BASE_DIR/config"
 
+DATA_DIR="/var/lib/mehboobxt"
+
+LOG_DIR="/var/log/mehboobxt"
+
+TEMP_DIR="$BASE_DIR/tmp"
+
+BACKUP_DIR="$BASE_DIR/backups"
+
+EXPORT_DIR="$BASE_DIR/export"
+
 API_DIR="$BASE_DIR/api"
+
+MODULE_DIR="$PANEL_DIR/modules"
+
+CORE_DIR="$PANEL_DIR/core"
+
+ASSETS_DIR="$PANEL_DIR/assets"
+
+TEMPLATES_DIR="$PANEL_DIR/templates"
+
+MAIN_DB="$DATA_DIR/mehboobxt.db"
 
 SSH_DB="$DATA_DIR/ssh_accounts.db"
 
-BACKUP="$SSH_BACKUP_DIR"
-EXPORT="$SSH_EXPORT_DIR"
-
 VLESS_DB="$DATA_DIR/vless_accounts.db"
+
+VMESS_DB="$DATA_DIR/vmess_accounts.db"
+
+TROJAN_DB="$DATA_DIR/trojan_accounts.db"
+
+USERS_DB="$DATA_DIR/users.db"
+
+SETTINGS_DB="$DATA_DIR/settings.db"
+
+LOG_DB="$DATA_DIR/logs.db"
+
+BACKUP_DB="$DATA_DIR/backups.db"
+
+REFERRAL_DB="$DATA_DIR/referrals.db"
+
+
+PANEL_CONFIG="$CONFIG_DIR/panel.conf"
+
+NGINX_CONFIG="/etc/nginx/nginx.conf"
+
+XRAY_CONFIG="/usr/local/etc/xray/config.json"
+
+SSH_CONFIG="/etc/ssh/sshd_config"
+
+SERVICE_FILE="/etc/systemd/system/mehboobxt.service"
+
+
+SSH_BACKUP_DIR="$BACKUP_DIR/ssh"
+
+VLESS_BACKUP_DIR="$BACKUP_DIR/vless"
+
+VMESS_BACKUP_DIR="$BACKUP_DIR/vmess"
+
+TROJAN_BACKUP_DIR="$BACKUP_DIR/trojan"
+
+
+SSH_EXPORT_DIR="$EXPORT_DIR/ssh"
+
+VLESS_EXPORT_DIR="$EXPORT_DIR/vless"
+
+VMESS_EXPORT_DIR="$EXPORT_DIR/vmess"
+
+TROJAN_EXPORT_DIR="$EXPORT_DIR/trojan"
+
+
+PID_FILE="/var/run/mehboobxt.pid"
+
+LOCK_FILE="/tmp/mehboobxt.lock"
+
+CACHE_DIR="$BASE_DIR/cache"
+
+SESSION_DIR="$BASE_DIR/session"
+
+
+API_HOST="0.0.0.0"
+
+API_PORT="8080"
+
+API_SSL="false"
+
+
+RED="\033[1;31m"
+
+GREEN="\033[1;32m"
+
+YELLOW="\033[1;33m"
+
+BLUE="\033[1;34m"
+
+CYAN="\033[1;36m"
+
+WHITE="\033[1;37m"
+
+NC="\033[0m"
+
+
+export PANEL_NAME PANEL_VERSION PANEL_AUTHOR PANEL_EDITION
+
+export BASE_DIR PANEL_DIR CONFIG_DIR DATA_DIR LOG_DIR
+export TEMP_DIR BACKUP_DIR EXPORT_DIR API_DIR
+export MODULE_DIR CORE_DIR ASSETS_DIR TEMPLATES_DIR
+
+export MAIN_DB SSH_DB VLESS_DB VMESS_DB TROJAN_DB
+export USERS_DB SETTINGS_DB LOG_DB BACKUP_DB REFERRAL_DB
+
+export PANEL_CONFIG NGINX_CONFIG XRAY_CONFIG SSH_CONFIG SERVICE_FILE
+
+export SSH_BACKUP_DIR VLESS_BACKUP_DIR VMESS_BACKUP_DIR TROJAN_BACKUP_DIR
+
+export SSH_EXPORT_DIR VLESS_EXPORT_DIR VMESS_EXPORT_DIR TROJAN_EXPORT_DIR
+
+export PID_FILE LOCK_FILE CACHE_DIR SESSION_DIR
+
+export API_HOST API_PORT API_SSL
+
+export RED GREEN YELLOW BLUE CYAN WHITE NC
