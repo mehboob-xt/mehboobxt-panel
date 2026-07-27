@@ -98,7 +98,7 @@ rotate_logs() {
 
 if [[ -f "$LOG_FILE" ]]; then
 
-size=$(stat -c%s "$LOG_FILE")
+size=$(wc -c < "$LOG_FILE")
 
 if (( size > 1048576 )); then
 
@@ -123,7 +123,11 @@ success "Logs cleared."
 
 view_logs() {
 
-less "$LOG_FILE"
+if command -v less >/dev/null 2>&1; then
+    less "$LOG_FILE"
+else
+    cat "$LOG_FILE"
+fi
 
 }
 
@@ -138,3 +142,4 @@ rotate_logs
 
 write_log INFO "Logger initialized."
 
+export LOG_FILE
