@@ -2,26 +2,45 @@
 
 set -e
 
-BASE_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "========================================"
-echo "      MehboobXT Installer v1.0.0"
-echo "========================================"
+echo "========================================="
+echo "      MehboobXT Premium Installer"
+echo "========================================="
+echo
 
-bash "$BASE_DIR/check_os.sh"
-bash "$BASE_DIR/check_network.sh"
-bash "$BASE_DIR/system_updates.sh"
-bash "$BASE_DIR/install_dependencies.sh"
+bash "$SCRIPT_DIR/check_os.sh"
+bash "$SCRIPT_DIR/check_network.sh"
+bash "$SCRIPT_DIR/system_update.sh"
+bash "$SCRIPT_DIR/install_dependencies.sh"
 
-bash "$BASE_DIR/create_directories.sh"
-bash "$BASE_DIR/download_panel.sh"
-bash "$BASE_DIR/create_config.sh"
-bash "$BASE_DIR/create_databases.sh"
+echo
+echo "Creating directories..."
 
-bash "$BASE_DIR/set_permissions.sh"
-bash "$BASE_DIR/create_commands.sh"
-bash "$BASE_DIR/create_service.sh"
+mkdir -p /etc/mehboobxt
+mkdir -p /var/lib/mehboobxt
+mkdir -p /var/log/mehboobxt
+mkdir -p /usr/local/mehboobxt
 
-bash "$BASE_DIR/finish_install.sh"
+echo "Directories created."
+
+echo
+echo "Initializing Core..."
+
+chmod +x "$SCRIPT_DIR"/../core/*.sh
+
+source "$SCRIPT_DIR/../core/config.sh"
+source "$SCRIPT_DIR/../core/logger.sh"
+source "$SCRIPT_DIR/../core/database.sh"
+
+db_init
+
+success "Database initialized."
+
+echo
+success "MehboobXT Premium installed successfully."
+echo
+echo "Run Panel using:"
+echo "bash menu.sh"
 
 exit 0
