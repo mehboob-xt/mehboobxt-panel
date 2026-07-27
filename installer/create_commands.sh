@@ -1,78 +1,20 @@
 #!/bin/bash
 
 set -e
-set -u
-set -o pipefail
 
-info() {
-    echo -e "\033[1;34m[INFO]\033[0m $1"
-}
+source "$(dirname "$0")/../core/config.sh"
+source "$(dirname "$0")/../core/logger.sh"
 
-success() {
-    echo -e "\033[1;32m[ OK ]\033[0m $1"
-}
+info "Creating MehboobXT command..."
 
-error() {
-    echo -e "\033[1;31m[FAIL]\033[0m $1"
-}
+mkdir -p /usr/local/bin
 
-########################################
-# Root Check
-########################################
-
-if [[ $EUID -ne 0 ]]; then
-    error "Please run as root."
-    exit 1
-fi
-
-########################################
-# Variables
-########################################
-
-PANEL_DIR="/usr/local/mehboobxt"
-
-COMMAND_FILE="/usr/local/bin/mehboobxt"
-
-########################################
-# Create Command
-########################################
-
-info "Creating global command..."
-
-cat > "$COMMAND_FILE" <<EOF
+cat > /usr/local/bin/mehboobxt <<EOF
 #!/bin/bash
-exec $PANEL_DIR/menu.sh "\$@"
+exec "$PANEL_DIR/menu.sh" "\$@"
 EOF
 
-########################################
-# Permissions
-########################################
-
-chmod +x "$COMMAND_FILE"
-
-########################################
-# Verify
-########################################
-
-if [[ ! -x "$COMMAND_FILE" ]]; then
-    error "Command creation failed."
-    exit 1
-fi
-
-########################################
-# PATH Check
-########################################
-
-if command -v mehboobxt >/dev/null 2>&1; then
-    success "Global command verified."
-else
-    error "Command verification failed."
-    exit 1
-fi
-
-########################################
-# Finish
-########################################
+chmod +x /usr/local/bin/mehboobxt
 
 success "Global command created successfully."
 
