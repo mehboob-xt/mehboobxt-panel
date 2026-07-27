@@ -1,106 +1,62 @@
 #!/bin/bash
 
-# ===================================
-# MehboobXT System Helper
-# Linux System Operations
-# ===================================
-system_user_exists() {
+source "$(dirname "$0")/config.sh"
+source "$(dirname "$0")/logger.sh"
 
-    local USER="$1"
-
-    id "$USER" >/dev/null 2>&1
-
+system_hostname() {
+    hostname
 }
 
-system_create_user() {
-
-    local USER="$1"
-    local PASS="$2"
-    local EXPIRY="$3"
-
-    useradd \
-        -e "$EXPIRY" \
-        -M \
-        -s /usr/sbin/nologin \
-        "$USER" || return 1
-
-    echo "$USER:$PASS" | chpasswd || return 1
-
-return 0
-
+system_os() {
+    source /etc/os-release
+    echo "$PRETTY_NAME"
 }
 
-system_delete_user() {
-
-    local USER="$1"
-
-    userdel -f "$USER" || return 1
-
-return 0
-
+system_kernel() {
+    uname -r
 }
 
-system_change_password() {
-
-    local USER="$1"
-    local PASS="$2"
-
-    echo "$USER:$PASS" | chpasswd || return 1
-
-return 0
-
+system_arch() {
+    uname -m
 }
 
-system_lock_user() {
-
-    local USER="$1"
-
-    passwd -l "$USER" || return 1
-
-return 0
-
+system_uptime() {
+    uptime -p
 }
 
-system_unlock_user() {
-
-    local USER="$1"
-
-    passwd -u "$USER" || return 1
-
-return 0
-
+system_ip() {
+    hostname -I | awk '{print $1}'
 }
 
-system_rename_user() {
-
-    local OLDUSER="$1"
-    local NEWUSER="$2"
-
-    usermod -l "$NEWUSER" "$OLDUSER" || return 1
-
-return 0
-
+system_ram() {
+    free -h | awk '/Mem:/ {print $3 "/" $2}'
 }
 
-system_set_expiry() {
-
-    local USER="$1"
-    local EXPIRY="$2"
-
-    usermod -e "$EXPIRY" "$USER" || return 1
-
-return 0
-
+system_swap() {
+    free -h | awk '/Swap:/ {print $3 "/" $2}'
 }
 
-system_online_count() {
-
-    who | wc -l
-
+system_disk() {
+    df -h / | awk 'NR==2 {print $3 "/" $2 " (" $5 ")"}'
 }
 
-system_online_users() {
-
-    who
-
+system_cpu() {
+    grep "model name" /proc/cpuinfo | head -1 | cut -d: -f2 | xargs
 }
+
+cpu_cores() {
+    nproc
+}
+
+load_average() {
+    uptime | awk -F'load average:' '{print $2}'
+}
+
+network_online() {
+    ping -c1 -W2 1.1.1.1 >/dev/null 2>&1
+}
+
+system_summary() {
+
+    echo "Hostname : $(system_hostname)"
+    echo "OS      
