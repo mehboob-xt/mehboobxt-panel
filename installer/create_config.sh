@@ -1,76 +1,40 @@
 #!/bin/bash
 
 set -e
-set -u
-set -o pipefail
 
-info() {
-    echo -e "\033[1;34m[INFO]\033[0m $1"
-}
+source "$(dirname "$0")/../core/config.sh"
+source "$(dirname "$0")/../core/logger.sh"
 
-success() {
-    echo -e "\033[1;32m[ OK ]\033[0m $1"
-}
-
-error() {
-    echo -e "\033[1;31m[FAIL]\033[0m $1"
-}
-
-########################################
-# Root Check
-########################################
-
-if [[ $EUID -ne 0 ]]; then
-    error "Please run as root."
-    exit 1
-fi
-
-CONFIG_DIR="/etc/mehboobxt"
-CONFIG_FILE="$CONFIG_DIR/panel.conf"
+info "Creating MehboobXT configuration..."
 
 mkdir -p "$CONFIG_DIR"
 
-########################################
-# Create Config
-########################################
-
-if [[ -f "$CONFIG_FILE" ]]; then
-    success "Configuration already exists."
-    exit 0
-fi
-
-info "Creating configuration..."
-
-cat > "$CONFIG_FILE" <<EOF
-########################################
+cat > "$CONFIG_DIR/panel.conf" <<EOF
+# ======================================
 # MehboobXT Panel Configuration
-########################################
+# ======================================
 
 PANEL_NAME="MehboobXT"
+VERSION="1.0.0"
 
-PANEL_VERSION="1.0.0"
+BASE_DIR="$BASE_DIR"
+PANEL_DIR="$PANEL_DIR"
+CONFIG_DIR="$CONFIG_DIR"
+DATA_DIR="$DATA_DIR"
+LOG_DIR="$LOG_DIR"
+TEMP_DIR="$TEMP_DIR"
+BACKUP_DIR="$BACKUP_DIR"
+EXPORT_DIR="$EXPORT_DIR"
 
-INSTALL_PATH="/usr/local/mehboobxt"
-
-DATA_PATH="/var/lib/mehboobxt"
-
-LOG_PATH="/var/log/mehboobxt"
-
-DB_PATH="/var/lib/mehboobxt/database/mehboobxt.db"
-
-BACKUP_PATH="/etc/mehboobxt/backups"
-
-HOST="0.0.0.0"
-
-PORT="8080"
-
-SSL="false"
-
-DEBUG="false"
+SSH_PORT=22
+DEBUG=false
+AUTO_BACKUP=true
+BACKUP_DAYS=7
+TIMEZONE="UTC"
 EOF
 
-chmod 600 "$CONFIG_FILE"
+chmod 600 "$CONFIG_DIR/panel.conf"
 
-success "Configuration created."
+success "Configuration created successfully."
 
 exit 0
