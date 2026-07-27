@@ -1,102 +1,36 @@
 #!/bin/bash
 
 set -e
-set -u
-set -o pipefail
 
-info() {
-    echo -e "\033[1;34m[INFO]\033[0m $1"
-}
+source "$(dirname "$0")/../core/config.sh"
+source "$(dirname "$0")/../core/logger.sh"
 
-success() {
-    echo -e "\033[1;32m[ OK ]\033[0m $1"
-}
+info "Creating MehboobXT database..."
 
-error() {
-    echo -e "\033[1;31m[FAIL]\033[0m $1"
-}
+mkdir -p "$DATA_DIR"
 
-########################################
-# Root Check
-########################################
+DB_FILES=(
+    "$DATA_DIR/users.db"
+    "$DATA_DIR/admins.db"
+    "$DATA_DIR/ssh.db"
+    "$DATA_DIR/vless.db"
+    "$DATA_DIR/vmess.db"
+    "$DATA_DIR/trojan.db"
+    "$DATA_DIR/referrals.db"
+    "$DATA_DIR/backups.db"
+    "$DATA_DIR/logs.db"
+)
 
-if [[ $EUID -ne 0 ]]; then
-    error "Please run as root."
-    exit 1
-fi
+for db in "${DB_FILES[@]}"; do
+    if [[ ! -f "$db" ]]; then
+        touch "$db"
+        chmod 600 "$db"
+        success "Created: $(basename "$db")"
+    else
+        warning "Exists: $(basename "$db")"
+    fi
+done
 
-########################################
-# Database Directory
-########################################
-
-DB_DIR="/var/lib/mehboobxt/database"
-DB_FILE="$DB_DIR/mehboobxt.db"
-
-mkdir -p "$DB_DIR"
-
-########################################
-# SQLite Check
-########################################
-
-command -v sqlite3 >/dev/null || {
-    error "sqlite3 is not installed."
-    exit 1
-}
-
-########################################
-# Create Database
-########################################
-
-if [[ ! -f "$DB_FILE" ]]; then
-
-    info "Creating database..."
-
-    sqlite3 "$DB_FILE" <<EOF
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE,
-    password TEXT,
-    role TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS settings (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT UNIQUE,
-    value TEXT
-);
-
-CREATE TABLE IF NOT EXISTS logs (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    action TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS backups (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    filename TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-EOF
-
-    success "Database created."
-
-else
-
-    success "Database already exists."
-
-fi
-
-########################################
-# Permissions
-########################################
-
-chmod 600 "$DB_FILE"
-
-########################################
-# Finish
-########################################
-
-success "Database initialization completed."
+success "Database initialized successfully."
 
 exit 0
