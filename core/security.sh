@@ -3,132 +3,103 @@
 source "$(dirname "$0")/config.sh"
 source "$(dirname "$0")/logger.sh"
 
-########################################
-# MehboobXT Security Library
-# Version: 1.0.0
-########################################
-
-is_root() {
-    [[ $EUID -eq 0 ]]
+generate_password() {
+    tr -dc 'A-Za-z0-9@#%+=' </dev/urandom | head -c "${1:-16}"
 }
 
-require_root() {
-    if ! is_root; then
-        error "Please run as root."
-        exit 1
-    fi
+password_hash() {
+    openssl passwd -6 "$1"
 }
 
-hash_password() {
-    local password="$1"
+check_password_strength() {
 
-    echo -n "$password" | sha256sum | awk '{print $1}'
+    local pass="$1"
+
+    [[ ${#pass} -ge 8 ]] || return 1
+    [[ "$pass" =~ [A-Z] ]] || return 1
+    [[ "$pass" =~ [a-z] ]] || return 1
+    [[ "$pass" =~ [0-9] ]] || return 1
+
+    return 0
 }
 
-verify_password() {
-    local password="$1"
+secure_file() {
+
+    chmod 600 "$1"
+}
+
+secure_directory() {
+
+    chmod 700 "$1"
+}
+
+verify_owner() {
+
+    [[ "$(stat -c %U "$1")" == "root" ]]
+}
+
+sha256_file() {
+
+    sha256sum "$1" | awk '{print $1}'
+}
+
+verify_checksum() {
+
+    local file="$1"
     local hash="$2"
 
-    [[ "$(hash_password "$password")" == "$hash" ]]
+    [[ "$(sha256_file "$file")" == "$hash" ]]
 }
 
-generate_token() {
+random_token() {
+
     openssl rand -hex 32
 }
 
-generate_api_key() {
-    openssl rand -hex 24
+is_port_open() {
+
+    ss -lnt | awk '{print $4}' | grep -q ":$1$"
 }
 
-generate_uuid() {
+ensure_port_free() {
 
-    if command -v uuidgen >/dev/null 2>&1; then
-        uuidgen
-    else
-        cat /proc/sys/kernel/random/uuid
+    if is_port_open "$1"; then
+        error "Port $1 already in use."
+        return 1
     fi
 }
 
-generate_password() {
+enable_ufw() {
 
-    tr -dc 'A-Za-z0-9@#%+=' </dev/urandom | head -c 16
+    command -v ufw >/dev/null || return
 
-    echo
+    ufw --force enable >/dev/null 2>&1
 }
 
-secure_compare() {
+allow_port() {
 
-    [[ "$1" == "$2" ]]
+    command -v ufw >/dev/null || return
+
+    ufw allow "$1" >/dev/null 2>&1
 }
 
-file_secure() {
+deny_port() {
 
-    local file="$1"
+    command -v ufw >/dev/null || return
 
-    chmod 600 "$file"
+    ufw delete allow "$1" >/dev/null 2>&1
 }
 
-directory_secure() {
+disable_root_login() {
 
-    local dir="$1"
+    sed -i 's/^PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
 
-    chmod 700 "$dir"
+    systemctl restart ssh 2>/dev/null || systemctl restart sshd
 }
 
-command_exists() {
+enable_root_login() {
 
-    command -v "$1" >/dev/null 2>&1
+    sed -i 's/^PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+
+    systemctl restart ssh 2>/dev/null || systemctl restart sshd
 }
-
-check_dependencies() {
-
-    local deps=(
-        openssl
-        sha256sum
-    )
-
-    for cmd in "${deps[@]}"
-    do
-        if ! command_exists "$cmd"; then
-            error "$cmd is missing."
-            return 1
-        fi
-    done
-
-    success "Security dependencies OK."
-}
-
-session_token() {
-
-    generate_token
-}
-
-random_string() {
-
-    local length="${1:-32}"
-
-    tr -dc 'A-Za-z0-9' </dev/urandom | head -c "$length"
-
-    echo
-}
-
-safe_remove() {
-
-    local target="$1"
-
-    [[ -e "$target" ]] || return
-
-    rm -rf "$target"
-}
-
-secure_tempfile() {
-
-    mktemp
-}
-
-secure_tempdir() {
-
-    mktemp -d
-}
-
-check_dependencies
