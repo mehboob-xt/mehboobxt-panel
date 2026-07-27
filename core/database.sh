@@ -1,129 +1,63 @@
 #!/bin/bash
 
+source "$(dirname "$0")/config.sh"
+source "$(dirname "$0")/logger.sh"
+
 db_exists() {
-
-    local FILE="$1"
-
-    [ -f "$FILE" ]
-
+    [[ -f "$1" ]]
 }
 
-db_add() {
+db_create() {
+    local db="$1"
 
-    local FILE="$1"
-    local DATA="$2"
+    if db_exists "$db"; then
+        return
+    fi
 
-    grep -q "^$(echo "$DATA" | cut -d'|' -f1)|" "$FILE" && return 1
+    touch "$db"
+    chmod 600 "$db"
 
-echo "$DATA" >> "$FILE" || return 1
-
-return 0
-
+    success "Database created: $(basename "$db")"
 }
 
-db_find() {
+db_init() {
 
-    local FILE="$1"
-    local QUERY="$2"
+    db_create "$DB_USERS"
+    db_create "$DB_ADMINS"
 
-    grep -m1 "^$QUERY|" "$FILE"
+    db_create "$DB_SSH"
+    db_create "$DB_VLESS"
+    db_create "$DB_VMESS"
+    db_create "$DB_TROJAN"
 
-}
-
-db_search() {
-
-    local FILE="$1"
-    local QUERY="$2"
-
-    grep -i "$QUERY" "$FILE"
-
-}
-
-db_delete() {
-
-    local FILE="$1"
-    local QUERY="$2"
-
-    sed -i "/^$QUERY|/d" "$FILE" || return 1
-
-return 0
-
-}
-
-db_update() {
-
-    local FILE="$1"
-    local QUERY="$2"
-    local DATA="$3"
-
-    sed -i "/^$QUERY|/d" "$FILE" || return 1
-
-echo "$DATA" >> "$FILE" || return 1
-
-return 0
-
+    db_create "$DB_REFERRALS"
+    db_create "$DB_BACKUPS"
+    db_create "$DB_LOGS"
 }
 
 db_backup() {
 
-    local FILE="$1"
-    local DEST="$2"
+    local file="$1"
 
-    cp "$FILE" "$DEST" || return 1
-
-return 0
-
-}
-
-db_restore() {
-
-    local SRC="$1"
-    local DEST="$2"
-
-    cp "$SRC" "$DEST" || return 1
-
-return 0
-
-}
-db_read() {
-
-    local FILE="$1"
-    local QUERY="$2"
-
-    grep -m1 "^$QUERY|" "$FILE"
-
-}
-
-db_get_field() {
-
-    local FILE="$1"
-    local QUERY="$2"
-    local FIELD="$3"
-
-    db_read "$FILE" "$QUERY" | cut -d'|' -f"$FIELD"
-
+    cp "$file" "$BACKUP_DIR/$(basename "$file").$(date +%F-%H%M%S)"
 }
 
 db_count() {
 
-    local FILE="$1"
+    [[ -f "$1" ]] || {
+        echo 0
+        return
+    }
 
-    wc -l < "$FILE"
-
+    wc -l < "$1"
 }
 
-db_empty() {
+db_clear() {
 
-    local FILE="$1"
-
-    [ ! -s "$FILE" ]
-
+    : > "$1"
 }
 
-db_list() {
+db_remove() {
 
-    local FILE="$1"
-
-    cat "$FILE"
-
+    rm -f "$1"
 }
