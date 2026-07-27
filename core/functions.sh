@@ -1,95 +1,56 @@
 #!/bin/bash
 
-# ==========================================
-# MehboobXT Panel Core Functions
-# Version: 1.0.0
-# ==========================================
+source "$(dirname "$0")/config.sh"
+source "$(dirname "$0")/logger.sh"
 
-
-# Colors
-GREEN="\033[0;32m"
-RED="\033[0;31m"
-YELLOW="\033[0;33m"
-NC="\033[0m"
-
-
-# Header
-panel_header() {
-    clear
-    echo -e "${GREEN}"
-    echo "======================================"
-    echo "        🚀 MehboobXT Panel"
-    echo "        Version 1.0.0"
-    echo "======================================"
-    echo -e "${NC}"
-}
-
-
-# Success Message
-success() {
-    echo -e "${GREEN}✔ $1${NC}"
-}
-
-
-# Error Message
-error() {
-    echo -e "${RED}✘ $1${NC}"
-}
-
-
-# Warning Message
-warning() {
-    echo -e "${YELLOW}! $1${NC}"
-}
-
-
-# Check Root
-check_root() {
-    if [ "$EUID" -ne 0 ]; then
-        error "Please run as root"
+require_root() {
+    [[ $EUID -eq 0 ]] || {
+        error "Please run as root."
         exit 1
-    fi
+    }
 }
 
-
-# Pause
-pause() {
-    read -p "Press Enter to continue..."
-}
-# Check Command Exists
-check_command() {
-
+command_exists() {
     command -v "$1" >/dev/null 2>&1
-
 }
 
-
-# Install Package Helper
-install_package() {
-
-    if ! check_command "$1"
-    then
-        apt update -y
-        apt install "$1" -y
-    fi
-
+require_command() {
+    command_exists "$1" || {
+        error "Required command not found: $1"
+        exit 1
+    }
 }
 
-
-# Check User Exists
-user_exists() {
-
-    id "$1" >/dev/null 2>&1
-
+pause() {
+    read -rp "Press Enter to continue..."
 }
-# Load Module Helper
-load_module() {
 
-    if [ -f "$1" ]
-    then
-        source "$1"
-    else
-        error "Module missing: $1"
-    fi
+confirm() {
+    read -rp "$1 [y/N]: " ans
+    [[ "$ans" =~ ^[Yy]$ ]]
+}
 
+create_dir() {
+    mkdir -p "$1"
+}
+
+create_file() {
+    touch "$1"
+}
+
+random_string() {
+    tr -dc A-Za-z0-9 </dev/urandom | head -c "${1:-16}"
+}
+
+today() {
+    date '+%F'
+}
+
+timestamp() {
+    date '+%F %T'
+}
+
+die() {
+    error "$1"
+    exit 1
 }
