@@ -1,80 +1,51 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/mehboob-xt/mehboobxt-panel/main/logo.png" alt="MehboobXT Panel" width="280">
-</p>
+# Mehboob-XT VPS Panel
 
-  <h1>Mehboob-XT Panel</h1>
-  <p><strong>Premium • Powerful • Modern Xray Control Panel</strong></p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Platform: Linux](https://img.shields.io/badge/Platform-Debian%20%7C%20Ubuntu-orange.svg)](https://www.debian.org/)
+[![Engine: Xray-core](https://img.shields.io/badge/Engine-Xray--core-red.svg)](https://github.com/XTLS/Xray-core)
+[![Backend: FastAPI](https://img.shields.io/badge/Backend-FastAPI%20(Python%203)-green.svg)](https://fastapi.tiangolo.com/)
 
-  <p>
-    <img src="https://img.shields.io/badge/release-v1.0.0-blue?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/build-passing-brightgreen?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/Go-1.22+-00ADD8?style=for-the-badge&logo=go" />
-    <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/platform-Linux-orange?style=for-the-badge" />
-  </p>
-
-  <p>
-    <a href="#-english">English</a> •
-    <a href="#-اردو">اردو</a> •
-    <a href="#-فارسی">فارسی</a> •
-    <a href="#-中文">中文</a>
-  </p>
-
-</div>
-
-<br>
-
-**Mehboob-XT** is a highly enhanced, premium-grade web control panel for managing Xray-core servers.  
-Built for performance, beauty, and power — it delivers a clean modern interface with advanced features that go beyond standard panels.
-
-Perfect for personal use, multi-node setups, and high-demand environments.
-
-> **Important**  
-> This project is intended for **personal use only**.  
-> Please do not use it for illegal purposes or in a production environment.
+**Mehboob-XT Panel** is an enterprise-grade, high-performance VPS management control system designed for proxy protocol orchestration, SSH tunnel multiplexing, and client bandwidth accounting. Inspired by the flexibility of **3x-ui** and the user-centric architecture of **Marz-X**, Mehboob-XT delivers unified control over Xray-core, native SSH subsystems, and modern tunneling transports.
 
 ---
 
-## Features
+## ⚡ Key Highlights
 
-### Core Capabilities
-- **Multi-Protocol Inbounds** — VLESS, VMess, Trojan, Shadowsocks, WireGuard, Hysteria2, SSH, HTTP, SOCKS (Mixed) & more
-- **Modern Transports & Security** — TCP, WebSocket, gRPC, HTTPUpgrade, XHTTP with TLS, XTLS & REALITY
-- **Fallbacks** — Serve multiple protocols on a single port (e.g. VLESS + Trojan on 443)
-- **Per-Client Management** — Traffic quotas, expiry dates, IP limits, live online status, one-click share links, QR codes & subscriptions
+### 1. Multi-Protocol Inbound Management
+* **Xray-Core Native:** VLESS, VMess, Trojan, Shadowsocks (2022-blake3 / AEAD), SOCKS5, and HTTP proxy.
+* **Modern Transports:** TCP, WebSocket (WS), gRPC, HTTPUpgrade, and SplitHTTP.
+* **Next-Gen Security:** XTLS-Vision, REALITY (eliminating the need for custom domain certificates via TLS 1.3 SNI spoofing), and standard TLS/mTLS.
+* **Extended Protocols:** WireGuard endpoint bridging and Hysteria2 UDP acceleration.
 
-### Advanced Control
-- **Traffic Statistics** — Per inbound, per client, and per outbound with reset controls
-- **Multi-Node Support** — Manage and scale across multiple servers from a single panel
-- **Outbound & Routing** — WARP, custom routing rules, load balancers & outbound proxy chaining
-- **Built-in Subscription Server** — Multiple output formats + custom page templates
-- **Telegram Bot** — Remote monitoring and management
-- **RESTful API** — Fully documented
-- **Flexible Storage** — SQLite (default) or PostgreSQL
-- **Auto SSL** — Let's Encrypt support
-- **Fail2Ban Integration** — Enforce per-client IP limits
+### 2. Native SSH Tunnel Management
+* Dedicated Linux user provisioning without full shell access (`/usr/sbin/nologin`).
+* Connection concurrency limit enforcement per user.
+* Expiration dates, data limits, and multi-port listening (Direct OpenSSH / Dropbear integration).
 
-### Premium Tools (Coming Soon)
-- Advanced Config Generator (HTTP Custom + Dark Tunnel + FreeBasics)
-- Reseller System with Balance & Permissions
-- Custom Branding
-- Multi-Admin Roles
+### 3. High-Performance Web Dashboard & CLI
+* **Web UI:** Responsive single-page interface powered by a lightweight FastAPI backend and asynchronous SQLite persistence.
+* **CLI Engine (`menu.sh`):** Terminal UI with zero external dependencies for headless system administration, port resetting, core updates, and node diagnostics.
+
+### 4. Hardened Security by Default
+* Automated UFW/NFTables rule adjustments on inbound mutation.
+* Automated Let's Encrypt SSL/TLS issuance and renewal (Standalone + DNS challenge).
+* In-memory brute-force rate-limiting and dynamic Fail2ban rules for panel authentication.
 
 ---
 
-## Screenshots
+## 🖥️ System Compatibility
 
-| Dashboard Overview | Add Inbound |
-|:---:|:---:|
-| ![Dashboard](screenshots/1-overview.webp) | ![Add Inbound](screenshots/2-add-inbound.webp) |
-
-| Add Client | Clients List |
-|:---:|:---:|
-| ![Add Client](screenshots/3-add-client.webp) | ![Clients](screenshots/4-clients.webp) |
+| Operating System | Versions Supported | Status |
+| :--- | :--- | :--- |
+| **Ubuntu** | 20.04 LTS, 22.04 LTS, 24.04 LTS | **Fully Supported** |
+| **Debian** | 11 (Bullseye), 12 (Bookworm) | **Fully Supported** |
+| **Architecture** | `x86_64` (amd64), `aarch64` (arm64) | **Supported** |
 
 ---
 
-## Quick Start
+## 🚀 Quick Installation
+
+Run the master bootstrap command as `root`:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/mehboob-xt/mehboobxt-panel/main/install.sh)
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/mehboob-xt/panel/main/install.sh)"
