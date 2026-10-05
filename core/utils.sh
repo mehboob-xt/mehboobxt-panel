@@ -1,82 +1,54 @@
-#!/bin/bash
+cat << 'EOF' > /opt/mehboobxt/core/utils.sh
+#!/usr/bin/env bash
+# ==============================================================================
+# Mehboob-XT Core Utilities
+# ==============================================================================
 
-source "$(dirname "$0")/config.sh"
-source "$(dirname "$0")/logger.sh"
+# Terminal Colors
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+export YELLOW='\033[0;33m'
+export BLUE='\033[0;34m'
+export PURPLE='\033[0;35m'
+export CYAN='\033[0;36m'
+export WHITE='\033[1;37m'
+export NC='\033[0m'
+export BOLD='\033[1m'
 
-command_exists() {
-    command -v "$1" >/dev/null 2>&1
-}
+# Status Loggers
+log_info()    { printf "${CYAN}[INFO]${NC} %s\n" "$1"; }
+log_success() { printf "${GREEN}[OK]${NC} %s\n" "$1"; }
+log_warn()    { printf "${YELLOW}[WARN]${NC} %s\n" "$1"; }
+log_err()     { printf "${RED}[ERROR]${NC} %s\n" "$1" >&2; }
 
-require_command() {
-    command_exists "$1" || {
-        error "$1 is not installed."
-        exit 1
-    }
-}
-
-pause() {
-    read -rp "Press Enter to continue..."
-}
-
-confirm() {
-    read -rp "$1 [y/N]: " ans
-    [[ "$ans" =~ ^[Yy]$ ]]
-}
-
-random_string() {
-    tr -dc A-Za-z0-9 </dev/urandom | head -c "${1:-16}"
-}
-
-random_number() {
-    shuf -i "${1:-1000}-${2:-9999}" -n1
-}
-
-generate_uuid() {
-    cat /proc/sys/kernel/random/uuid
-}
-
-port_used() {
-    ss -lnt | awk '{print $4}' | grep -q ":$1$"
-}
-
-find_free_port() {
-    for port in $(seq 10000 65000); do
-        if ! port_used "$port"; then
-            echo "$port"
-            return
-        fi
-    done
-}
-
-is_root() {
-    [[ $EUID -eq 0 ]]
-}
-
+# Pre-flight Checks
 check_root() {
-    is_root || {
-        error "Run as root."
+    if [[ "$(id -u)" -ne 0 ]]; then
+        log_err "This module must be executed as root."
         exit 1
-    }
+    fi
 }
 
-make_dir() {
-    mkdir -p "$1"
+# Fetch Server Public IPv4
+get_public_ip() {
+    local ip
+    ip=$(curl -4 -s --max-time 3 https://api.ipify.org || \
+         curl -4 -s --max-time 3 https://icanhazip.com || \
+         curl -4 -s --max-time 3 https://ifconfig.me/ip || \
+         hostname -I | awk '{print $1}')
+    echo "${ip:-127.0.0.1}"
 }
 
-remove_file() {
-    [[ -f "$1" ]] && rm -f "$1"
+# Check if a TCP Port is currently listening
+is_port_in_use() {
+    local port="$1"
+    ss -tulpn | grep -q ":${port} "
 }
 
-remove_dir() {
-    [[ -d "$1" ]] && rm -rf "$1"
+# Press Enter to continue helper
+press_enter() {
+    printf "\n${YELLOW}Press [Enter] to return to the menu...${NC}"
+    read -r
 }
-
-file_exists() {
-    [[ -f "$1" ]]
-}
-
-dir_exists() {
-    [[ -d "$1" ]]
-}
-
-current
+EOF
+chmod +x /opt/mehboobxt/core/utils.sh
