@@ -1,14 +1,15 @@
-#!/bin/bash
+cat << 'EOF' > /opt/mehboobxt/core/core.sh
+#!/usr/bin/env bash
+# ==============================================================================
+# Mehboob-XT Core Loader
+# ==============================================================================
 
-# =====================================
-# MehboobXT Core Helper
-# Version: 1.0.0
-# =====================================
+# Ensure execution base path
+export PANEL_DIR="/opt/mehboobxt"
 
-BASE_DIR="/opt/mehboobxt"
-
-source "$BASE_DIR/core/colors.sh"
-source "$BASE_DIR/core/config.sh"
-source "$BASE_DIR/core/banner.sh"
-source "$BASE_DIR/core/utils.sh"
-source "$BASE_DIR/core/functions.sh"
+# Source Core Components
+source "${PANEL_DIR}/core/utils.sh"
+source "${PANEL_DIR}/core/banner.sh"
+source "${PANEL_DIR}/core/functions.sh"
+EOF
+chmod +x /opt/mehboobxt/core/core.sh
