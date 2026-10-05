@@ -1,4 +1,3 @@
-cat << 'EOF' > /opt/mehboobxt/deploy_phase2.sh
 #!/usr/bin/env bash
 # ==============================================================================
 # MehboobXT VPS Panel - Phase 2 Deployment Script
