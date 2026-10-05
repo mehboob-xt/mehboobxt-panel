@@ -344,7 +344,7 @@ class XrayEngine:
             temp_path = tf.name
 
         try:
-            cmd = [settings.xray_bin, "run", "-test", "-config", temp_path]
+            cmd = [settings.xray_bin, "test", "-config", temp_path]
             proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=10)
             if proc.returncode == 0:
                 return True, "Configuration validated successfully."
@@ -1089,7 +1089,7 @@ case "$cmd" in
         journalctl -u mehboobxt -u mehboobxt-xray -f -n 50
         ;;
     xray-test)
-        /opt/mehboobxt/bin/xray run -test -config /opt/mehboobxt/config/xray_config.json
+        /opt/mehboobxt/bin/xray test -config /opt/mehboobxt/config/xray_config.json
         ;;
     reset-admin)
         reset_admin_password
@@ -1127,7 +1127,7 @@ case "$cmd" in
             3) systemctl restart mehboobxt mehboobxt-xray && echo -e "${GREEN}Restarted.${NC}" ;;
             4) systemctl status mehboobxt mehboobxt-xray --no-pager ;;
             5) journalctl -u mehboobxt -u mehboobxt-xray -f -n 50 ;;
-            6) /opt/mehboobxt/bin/xray run -test -config /opt/mehboobxt/config/xray_config.json ;;
+            6) /opt/mehboobxt/bin/xray test -config /opt/mehboobxt/config/xray_config.json ;;
             7) reset_admin_password ;;
             8) "${PANEL_DIR}/cli/mehboobxt.sh" info ;;
             0) exit 0 ;;
