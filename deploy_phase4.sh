@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#cat << 'EOF' > /opt/mehboobxt/deploy_phase4.sh
 # ==============================================================================
 # MehboobXT VPS Panel - Phase 4 Standalone Deployment Script
 # Responsive Web GUI Frontend (Tailwind CSS + Alpine.js + Jinja2)
@@ -11,48 +10,59 @@ IFS=$'\n\t'
 readonly PANEL_DIR="/opt/mehboobxt"
 readonly APP_DIR="${PANEL_DIR}/app"
 readonly REPO_DIR="/root/mehboobxt-panel"
-readonly PYTHON_BIN="${PANEL_DIR}/venv/bin/python3"
+readonly VENV_PYTHON="${PANEL_DIR}/venv/bin/python3"
 
 readonly CYAN='\033[0;36m'
 readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
 readonly RED='\033[0;31m'
 readonly NC='\033[0m'
 
 log_info()    { echo -e "${CYAN}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
+log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
 log_fatal()   { echo -e "${RED}[FATAL]${NC} $1" >&2; exit 1; }
 
+# Pre-flight check
 if [[ "$(id -u)" -ne 0 ]]; then
     log_fatal "Must be run as root."
 fi
 
-# ==============================================================================
-# BUG FIX 1: Missing Dependencies Install Karna
-# ==============================================================================
-log_info "Installing missing Python dependencies (psutil, jinja2)..."
-"${PANEL_DIR}/venv/bin/pip" install psutil jinja2 >/dev/null 2>&1 || log_fatal "Failed to install Python dependencies."
-log_success "Python dependencies installed."
+# Verify Python Virtual Environment
+if [[ ! -x "${VENV_PYTHON}" ]]; then
+    log_fatal "Virtual environment Python not found or not executable at ${VENV_PYTHON}."
+fi
 
-log_info "Creating templates and static assets directories..."
+# ------------------------------------------------------------------------------
+# 1. Install Dependencies Inside Virtualenv
+# ------------------------------------------------------------------------------
+log_info "Installing Phase 4 Python dependencies (psutil, jinja2) inside virtualenv..."
+"${VENV_PYTHON}" -m pip install psutil jinja2
+log_success "Virtualenv dependencies installed."
+
+# ------------------------------------------------------------------------------
+# 2. Prepare Directories
+# ------------------------------------------------------------------------------
+log_info "Creating frontend directories in ${APP_DIR}..."
 mkdir -p "${APP_DIR}/templates" "${APP_DIR}/static/css" "${APP_DIR}/static/js"
 
 # ------------------------------------------------------------------------------
-# 1. Custom Stylesheet
+# 3. Custom CSS
 # ------------------------------------------------------------------------------
 log_info "Writing ${APP_DIR}/static/css/custom.css..."
-cat << 'CSSEOF' > "${APP_DIR}/static/css/custom.css"
+cat << 'CSS_EOF' > "${APP_DIR}/static/css/custom.css"
 [x-cloak] { display: none !important; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #0f172a; }
 ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: #475569; }
-CSSEOF
+CSS_EOF
 
 # ------------------------------------------------------------------------------
-# 2. Alpine.js Application Store & API Engine
+# 4. Alpine.js Controller
 # ------------------------------------------------------------------------------
 log_info "Writing ${APP_DIR}/static/js/app.js..."
-cat << 'JSEOF' > "${APP_DIR}/static/js/app.js"
+cat << 'JS_EOF' > "${APP_DIR}/static/js/app.js"
 document.addEventListener('alpine:init', () => {
     Alpine.data('panelApp', () => ({
         currentTab: 'overview',
@@ -63,13 +73,11 @@ document.addEventListener('alpine:init', () => {
         loading: false,
         toast: { show: false, message: '', type: 'success' },
 
-        // Modals
         modalInbound: false,
         modalClient: false,
         modalSSH: false,
         modalShare: { show: false, link: '', title: '' },
 
-        // Inbound Form
         newInbound: {
             tag: '',
             protocol: 'vless',
@@ -90,7 +98,6 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // Client Form
         newClient: {
             inbound_id: '',
             email: '',
@@ -98,7 +105,6 @@ document.addEventListener('alpine:init', () => {
             flow: 'xtls-rprx-vision'
         },
 
-        // SSH User Form
         newSSH: {
             username: '',
             password: '',
@@ -132,7 +138,7 @@ document.addEventListener('alpine:init', () => {
                     this.systemInfo.xray_status = xrayData.is_active ? 'running' : 'stopped';
                 }
             } catch (e) {
-                console.error("Health fetch error", e);
+                console.error("Telemetry fetch error", e);
             }
         },
 
@@ -274,6 +280,22 @@ document.addEventListener('alpine:init', () => {
 
         showShare(title, link) {
             this.modalShare = { show: true, title: title, link: link };
+            this.$nextTick(() => {
+                const container = document.getElementById("qrcode");
+                if (container) {
+                    container.innerHTML = "";
+                    if (window.QRCode && link) {
+                        new QRCode(container, {
+                            text: link,
+                            width: 192,
+                            height: 192,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: QRCode.CorrectLevel.M
+                        });
+                    }
+                }
+            });
         },
 
         copyToClipboard(text) {
@@ -287,20 +309,19 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 });
-JSEOF
+JS_EOF
 
 # ------------------------------------------------------------------------------
-# 3. HTML Templates: Base, Login, Dashboard
+# 5. Base Layout Template
 # ------------------------------------------------------------------------------
 log_info "Writing ${APP_DIR}/templates/base.html..."
-cat << 'HTMLEOF' > "${APP_DIR}/templates/base.html"
+cat << 'BASE_HTML_EOF' > "${APP_DIR}/templates/base.html"
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}MehboobXT Panel{% endblock %}</title>
-    <!-- Tailwind CSS (Play CDN for standalone zero-node runtime) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -320,11 +341,8 @@ cat << 'HTMLEOF' > "${APP_DIR}/templates/base.html"
             }
         }
     </script>
-    <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
-    <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- QRCode.js -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <link rel="stylesheet" href="/static/css/custom.css">
 </head>
@@ -332,10 +350,13 @@ cat << 'HTMLEOF' > "${APP_DIR}/templates/base.html"
     {% block content %}{% endblock %}
 </body>
 </html>
-HTMLEOF
+BASE_HTML_EOF
 
+# ------------------------------------------------------------------------------
+# 6. Login View Template
+# ------------------------------------------------------------------------------
 log_info "Writing ${APP_DIR}/templates/login.html..."
-cat << 'HTMLEOF' > "${APP_DIR}/templates/login.html"
+cat << 'LOGIN_HTML_EOF' > "${APP_DIR}/templates/login.html"
 {% extends "base.html" %}
 {% block title %}Login - MehboobXT Panel{% endblock %}
 {% block content %}
@@ -396,15 +417,17 @@ cat << 'HTMLEOF' > "${APP_DIR}/templates/login.html"
     </div>
 </div>
 {% endblock %}
-HTMLEOF
+LOGIN_HTML_EOF
 
+# ------------------------------------------------------------------------------
+# 7. Dashboard View Template
+# ------------------------------------------------------------------------------
 log_info "Writing ${APP_DIR}/templates/dashboard.html..."
-cat << 'HTMLEOF' > "${APP_DIR}/templates/dashboard.html"
+cat << 'DASHBOARD_HTML_EOF' > "${APP_DIR}/templates/dashboard.html"
 {% extends "base.html" %}
 {% block title %}Dashboard - MehboobXT Panel{% endblock %}
 {% block content %}
 <div x-data="panelApp" class="flex h-screen overflow-hidden bg-slate-950">
-    <!-- Sidebar -->
     <aside class="w-64 bg-slate-900/90 border-r border-slate-800/80 flex flex-col justify-between p-4 z-20">
         <div>
             <div class="flex items-center space-x-3 px-2 py-4 mb-6">
@@ -413,7 +436,7 @@ cat << 'HTMLEOF' > "${APP_DIR}/templates/dashboard.html"
                 </div>
                 <div>
                     <h2 class="font-bold text-base text-white">MehboobXT</h2>
-                    <span class="text-xs text-indigo-400 font-medium">Enterprise v3.0</span>
+                    <span class="text-xs text-indigo-400 font-medium">Enterprise v4.0</span>
                 </div>
             </div>
 
@@ -445,11 +468,9 @@ cat << 'HTMLEOF' > "${APP_DIR}/templates/dashboard.html"
         </div>
     </aside>
 
-    <!-- Main Workspace -->
     <main class="flex-1 overflow-y-auto flex flex-col">
-        <!-- Topbar -->
         <header class="h-16 border-b border-slate-800/80 bg-slate-900/40 backdrop-blur px-8 flex items-center justify-between">
-            <h1 class="text-lg font-bold text-white uppercase tracking-wider text-xs" x-text="currentTab"></h1>
+            <h1 class="text-xs font-bold text-white uppercase tracking-wider" x-text="currentTab"></h1>
             <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700">
                     <span class="w-2 h-2 rounded-full" :class="systemInfo.xray_status === 'running' ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-rose-400'"></span>
@@ -458,9 +479,7 @@ cat << 'HTMLEOF' > "${APP_DIR}/templates/dashboard.html"
             </div>
         </header>
 
-        <!-- Content Area -->
         <div class="p-8 space-y-6">
-            <!-- Toast notification -->
             <div x-cloak x-show="toast.show" x-transition class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 border"
                 :class="toast.type === 'success' ? 'bg-emerald-950/90 text-emerald-300 border-emerald-800' : 'bg-rose-950/90 text-rose-300 border-rose-800'">
                 <i :class="toast.type === 'success' ? 'ph ph-check-circle text-xl' : 'ph ph-x-circle text-xl'"></i>
@@ -735,13 +754,13 @@ cat << 'HTMLEOF' > "${APP_DIR}/templates/dashboard.html"
     </div>
 </div>
 {% endblock %}
-HTMLEOF
+DASHBOARD_HTML_EOF
 
 # ------------------------------------------------------------------------------
-# 4. Update Application Main Entrypoint (Mount Static & UI Routes)
+# 8. Main FastAPI Application with Modern TemplateResponse Syntax
 # ------------------------------------------------------------------------------
-log_info "Updating ${APP_DIR}/main.py with GUI view controllers..."
-cat << 'PYEOF' > "${APP_DIR}/main.py"
+log_info "Writing ${APP_DIR}/main.py..."
+cat << 'MAIN_PY_EOF' > "${APP_DIR}/main.py"
 import os
 import psutil
 from contextlib import asynccontextmanager
@@ -757,14 +776,17 @@ from app.db.database import init_db, AsyncSessionLocal
 from app.db.models import Admin
 from app.services.xray_service import XrayService
 
-# Routers
+# Routers (Phase 2 & Phase 3)
 from app.api.auth import router as auth_router
 from app.api.xray import router as xray_router
 from app.api.inbounds import router as inbounds_router
 from app.api.clients import router as clients_router
 from app.api.ssh import router as ssh_router
 
-templates = Jinja2Templates(directory="/opt/mehboobxt/app/templates")
+TEMPLATES_DIR = "/opt/mehboobxt/app/templates"
+STATIC_DIR = "/opt/mehboobxt/app/static"
+
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 async def seed_initial_admin():
     async with AsyncSessionLocal() as session:
@@ -783,18 +805,21 @@ async def lifespan(app: FastAPI):
     await init_db()
     await seed_initial_admin()
     async with AsyncSessionLocal() as session:
-        await XrayService.sync_database_to_xray(session)
+        try:
+            await XrayService.sync_database_to_xray(session)
+        except Exception as e:
+            print(f"[WARN] Initial Xray sync deferred: {e}")
     yield
 
 app = FastAPI(
     title="MehboobXT Panel",
-    description="High-Performance Enterprise VPS Management Panel (GUI + Xray + SSH)",
+    description="Enterprise VPS Management Panel (GUI + Xray-core + SSH Subsystem)",
     version="4.0.0",
     lifespan=lifespan
 )
 
 # Mount Static Assets
-app.mount("/static", StaticFiles(directory="/opt/mehboobxt/app/static"), name="static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Mount API Routers
 app.include_router(auth_router)
@@ -803,7 +828,7 @@ app.include_router(inbounds_router)
 app.include_router(clients_router)
 app.include_router(ssh_router)
 
-# Web UI Routes
+# Web UI Routes (Using updated Starlette/FastAPI TemplateResponse signature)
 @app.get("/", response_class=HTMLResponse)
 async def index_view(request: Request):
     token = request.cookies.get("access_token")
@@ -811,22 +836,25 @@ async def index_view(request: Request):
         return RedirectResponse(url="/dashboard", status_code=302)
     return RedirectResponse(url="/login", status_code=302)
 
-# ==============================================================================
-# BUG FIX 2: Naya FastAPI/Starlette TemplateResponse Syntax
-# ==============================================================================
 @app.get("/login", response_class=HTMLResponse)
 async def login_view(request: Request):
     token = request.cookies.get("access_token")
     if token and decode_access_token(token):
         return RedirectResponse(url="/dashboard", status_code=302)
-    return templates.TemplateResponse(request=request, name="login.html")
+    return templates.TemplateResponse(
+        request=request,
+        name="login.html"
+    )
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_view(request: Request):
     token = request.cookies.get("access_token")
     if not token or not decode_access_token(token):
         return RedirectResponse(url="/login", status_code=302)
-    return templates.TemplateResponse(request=request, name="dashboard.html")
+    return templates.TemplateResponse(
+        request=request,
+        name="dashboard.html"
+    )
 
 @app.get("/health")
 async def health():
@@ -843,28 +871,52 @@ async def health():
             "db_path": settings.db_path
         }
     )
-PYEOF
+MAIN_PY_EOF
 
 # ------------------------------------------------------------------------------
-# 5. Mirror to Git Repository Root (/root/mehboobxt-panel)
+# 9. Integrity Verification
 # ------------------------------------------------------------------------------
-if [[ -d "${REPO_DIR}" ]]; then
+log_info "Verifying file integrity..."
+test -f "${APP_DIR}/templates/base.html"
+test -f "${APP_DIR}/templates/login.html"
+test -f "${APP_DIR}/templates/dashboard.html"
+test -f "${APP_DIR}/static/css/custom.css"
+test -f "${APP_DIR}/static/js/app.js"
+test -f "${APP_DIR}/main.py"
+log_success "All Phase 4 assets verified on disk."
+
+log_info "Verifying Python compilation..."
+"${VENV_PYTHON}" -m py_compile "${APP_DIR}/main.py"
+log_success "Python compilation succeeded."
+
+log_info "Testing Python dependencies in runtime environment..."
+(cd "${PANEL_DIR}" && "${VENV_PYTHON}" -c "import psutil, jinja2; print('Phase 4 Python dependencies OK')")
+log_success "Dependency imports verified."
+
+# ------------------------------------------------------------------------------
+# 10. Optional Repository Mirroring
+# ------------------------------------------------------------------------------
+if [[ -d "${REPO_DIR}/.git" ]]; then
     log_info "Synchronizing codebase with Git repository root (${REPO_DIR})..."
-    cp -r "${APP_DIR}"/* "${REPO_DIR}/app/"
+    mkdir -p "${REPO_DIR}/app"
+    cp -a "${APP_DIR}/." "${REPO_DIR}/app/"
+    cp -a "${PANEL_DIR}/deploy_phase4.sh" "${REPO_DIR}/deploy_phase4.sh"
+    log_success "Repository mirror synchronized."
+else
+    log_warn "Git repository not detected at ${REPO_DIR}/.git; skipping mirror."
 fi
 
 # ------------------------------------------------------------------------------
-# 6. Syntax Check & Systemd Restart
+# 11. Systemd Service Restart
 # ------------------------------------------------------------------------------
-log_info "Running Python compiler syntax checks..."
-"${PYTHON_BIN}" -m py_compile "${APP_DIR}/main.py"
-log_success "Python syntax passed."
-
-log_info "Restarting mehboobxt.service with Web UI stack..."
+log_info "Restarting mehboobxt.service..."
+systemctl daemon-reload
 systemctl restart mehboobxt.service
 
-log_success "Phase 4 Web UI deployed successfully!"
-EOF
+if systemctl is-active --quiet mehboobxt.service; then
+    log_success "mehboobxt.service is active and healthy."
+else
+    log_fatal "mehboobxt.service failed to enter active state."
+fi
 
-chmod +x /opt/mehboobxt/deploy_phase4.sh
-/opt/mehboobxt/deploy_phase4.sh
+log_success "Phase 4 Web UI deployed successfully!"
