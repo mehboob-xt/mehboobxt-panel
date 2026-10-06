@@ -830,6 +830,3 @@ systemctl restart mehboobxt.service
 
 echo "[OK] Frontend repair deployed successfully."
 EOF
-
-chmod +x /opt/mehboobxt/fix_phase4_frontend.sh
-/opt/mehboobxt/fix_phase4_frontend.sh
