@@ -1,11 +1,14 @@
 import os
 import psutil
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
+
 from app.core.config import settings
-from app.core.security import get_password_hash
+from app.core.security import get_password_hash, decode_access_token
 from app.db.database import init_db, AsyncSessionLocal
 from app.db.models import Admin
 from app.services.xray_service import XrayService
@@ -16,6 +19,8 @@ from app.api.xray import router as xray_router
 from app.api.inbounds import router as inbounds_router
 from app.api.clients import router as clients_router
 from app.api.ssh import router as ssh_router
+
+templates = Jinja2Templates(directory="/opt/mehboobxt/app/templates")
 
 async def seed_initial_admin():
     async with AsyncSessionLocal() as session:
@@ -31,51 +36,53 @@ async def seed_initial_admin():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup sequence
     await init_db()
     await seed_initial_admin()
     async with AsyncSessionLocal() as session:
-        # Sync initial state to Xray
         await XrayService.sync_database_to_xray(session)
     yield
 
 app = FastAPI(
     title="MehboobXT Panel",
-    description="High-Performance Enterprise VPS Management Panel (Xray & SSH)",
-    version="3.0.0",
+    description="High-Performance Enterprise VPS Management Panel (GUI + Xray + SSH)",
+    version="4.0.0",
     lifespan=lifespan
 )
 
-# Register API Routers
+# Mount Static Assets
+app.mount("/static", StaticFiles(directory="/opt/mehboobxt/app/static"), name="static")
+
+# Mount API Routers
 app.include_router(auth_router)
 app.include_router(xray_router)
 app.include_router(inbounds_router)
 app.include_router(clients_router)
 app.include_router(ssh_router)
 
-@app.get("/")
-async def root():
-    return {
-        "status": "online",
-        "panel": "MehboobXT Web Panel",
-        "version": "3.0.0",
-        "phase": "Phase 3 Operational (Xray Core + SSH Subsystem)",
-        "features": [
-            "VLESS-Reality",
-            "VMess",
-            "Trojan",
-            "Native SSH Tunnel Isolation",
-            "Deterministic Xray Sync"
-        ],
-        "endpoints": {
-            "docs": "/docs",
-            "health": "/health",
-            "xray_status": "/api/xray/status",
-            "inbounds": "/api/inbounds",
-            "clients": "/api/clients",
-            "ssh_users": "/api/ssh/users"
-        }
-    }
+# Web UI Routes
+@app.get("/", response_class=HTMLResponse)
+async def index_view(request: Request):
+    token = request.cookies.get("access_token")
+    if token and decode_access_token(token):
+        return RedirectResponse(url="/dashboard", status_code=302)
+    return RedirectResponse(url="/login", status_code=302)
+
+# ==============================================================================
+# BUG FIX 2: Naya FastAPI/Starlette TemplateResponse Syntax
+# ==============================================================================
+@app.get("/login", response_class=HTMLResponse)
+async def login_view(request: Request):
+    token = request.cookies.get("access_token")
+    if token and decode_access_token(token):
+        return RedirectResponse(url="/dashboard", status_code=302)
+    return templates.TemplateResponse(request=request, name="login.html")
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard_view(request: Request):
+    token = request.cookies.get("access_token")
+    if not token or not decode_access_token(token):
+        return RedirectResponse(url="/login", status_code=302)
+    return templates.TemplateResponse(request=request, name="dashboard.html")
 
 @app.get("/health")
 async def health():

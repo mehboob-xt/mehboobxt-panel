@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - MehboobXT Panel{% endblock %}
+{% block content %}
+<div x-data="panelApp" class="flex h-screen overflow-hidden bg-slate-950">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-slate-900/90 border-r border-slate-800/80 flex flex-col justify-between p-4 z-20">
+        <div>
+            <div class="flex items-center space-x-3 px-2 py-4 mb-6">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+                    <i class="ph-bold ph-shield-check text-2xl"></i>
+                </div>
+                <div>
+                    <h2 class="font-bold text-base text-white">MehboobXT</h2>
+                    <span class="text-xs text-indigo-400 font-medium">Enterprise v3.0</span>
+                </div>
+            </div>
+
+            <nav class="space-y-1.5">
+                <button @click="currentTab = 'overview'" :class="currentTab === 'overview' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all">
+                    <i class="ph ph-squares-four text-lg"></i>
+                    <span>Overview</span>
+                </button>
+                <button @click="currentTab = 'inbounds'" :class="currentTab === 'inbounds' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all">
+                    <i class="ph ph-arrows-in-cardinal text-lg"></i>
+                    <span>Inbounds</span>
+                </button>
+                <button @click="currentTab = 'clients'" :class="currentTab === 'clients' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all">
+                    <i class="ph ph-users text-lg"></i>
+                    <span>Xray Clients</span>
+                </button>
+                <button @click="currentTab = 'ssh'" :class="currentTab === 'ssh' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'" class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all">
+                    <i class="ph ph-terminal-window text-lg"></i>
+                    <span>SSH Tunnels</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="border-t border-slate-800/80 pt-4">
+            <button @click="logout()" class="w-full flex items-center space-x-3 px-3.5 py-2.5 text-rose-400 hover:bg-rose-500/10 rounded-xl font-medium text-sm transition-all">
+                <i class="ph ph-sign-out text-lg"></i>
+                <span>Sign Out</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 overflow-y-auto flex flex-col">
+        <!-- Topbar -->
+        <header class="h-16 border-b border-slate-800/80 bg-slate-900/40 backdrop-blur px-8 flex items-center justify-between">
+            <h1 class="text-lg font-bold text-white uppercase tracking-wider text-xs" x-text="currentTab"></h1>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700">
+                    <span class="w-2 h-2 rounded-full" :class="systemInfo.xray_status === 'running' ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-rose-400'"></span>
+                    <span class="text-slate-300">Xray-Core: <span x-text="systemInfo.xray_status" class="uppercase"></span></span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div class="p-8 space-y-6">
+            <!-- Toast notification -->
+            <div x-cloak x-show="toast.show" x-transition class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 border"
+                :class="toast.type === 'success' ? 'bg-emerald-950/90 text-emerald-300 border-emerald-800' : 'bg-rose-950/90 text-rose-300 border-rose-800'">
+                <i :class="toast.type === 'success' ? 'ph ph-check-circle text-xl' : 'ph ph-x-circle text-xl'"></i>
+                <span class="text-sm font-medium" x-text="toast.message"></span>
+            </div>
+
+            <!-- TAB 1: OVERVIEW -->
+            <section x-show="currentTab === 'overview'" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">CPU Utilization</span>
+                            <i class="ph ph-cpu text-xl text-indigo-400"></i>
+                        </div>
+                        <div class="text-3xl font-extrabold text-white" x-text="`${systemInfo.cpu}%`"></div>
+                        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4">
+                            <div class="bg-indigo-500 h-1.5 rounded-full" :style="`width: ${systemInfo.cpu}%`"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">RAM Consumption</span>
+                            <i class="ph ph-hard-drive text-xl text-indigo-400"></i>
+                        </div>
+                        <div class="text-3xl font-extrabold text-white" x-text="`${systemInfo.ram}%`"></div>
+                        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4">
+                            <div class="bg-indigo-500 h-1.5 rounded-full" :style="`width: ${systemInfo.ram}%`"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/80">
+                        <div class="flex items-center justify-between text-slate-400 mb-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider">Storage Used</span>
+                            <i class="ph ph-database text-xl text-indigo-400"></i>
+                        </div>
+                        <div class="text-3xl font-extrabold text-white" x-text="`${systemInfo.disk}%`"></div>
+                        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4">
+                            <div class="bg-indigo-500 h-1.5 rounded-full" :style="`width: ${systemInfo.disk}%`"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: INBOUNDS -->
+            <section x-show="currentTab === 'inbounds'" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-base font-bold text-white">Active Inbounds</h3>
+                    <button @click="modalInbound = true; generateRealityKeys();" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+                        <i class="ph ph-plus font-bold"></i>
+                        <span>Create Inbound</span>
+                    </button>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-800/50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="p-4">Tag</th>
+                                <th class="p-4">Protocol</th>
+                                <th class="p-4">Port</th>
+                                <th class="p-4">Transport</th>
+                                <th class="p-4">Clients</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            <template x-for="ib in inbounds" :key="ib.id">
+                                <tr class="hover:bg-slate-800/30 transition">
+                                    <td class="p-4 font-semibold text-white" x-text="ib.tag"></td>
+                                    <td class="p-4"><span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase bg-indigo-950 text-indigo-400 border border-indigo-800/40" x-text="ib.protocol"></span></td>
+                                    <td class="p-4 text-slate-300" x-text="ib.port"></td>
+                                    <td class="p-4 text-slate-400" x-text="`${ib.stream.network} (${ib.stream.security})`"></td>
+                                    <td class="p-4 text-slate-400" x-text="ib.client_count"></td>
+                                    <td class="p-4 text-right">
+                                        <button @click="deleteInbound(ib.id)" class="text-rose-400 hover:text-rose-300 p-2"><i class="ph ph-trash text-lg"></i></button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 3: CLIENTS -->
+            <section x-show="currentTab === 'clients'" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-base font-bold text-white">Xray Proxy Clients</h3>
+                    <button @click="modalClient = true" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+                        <i class="ph ph-user-plus font-bold"></i>
+                        <span>Add Client</span>
+                    </button>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-800/50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="p-4">Email</th>
+                                <th class="p-4">Inbound ID</th>
+                                <th class="p-4">UUID</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            <template x-for="cl in clients" :key="cl.id">
+                                <tr class="hover:bg-slate-800/30 transition">
+                                    <td class="p-4 font-semibold text-white" x-text="cl.email"></td>
+                                    <td class="p-4 text-slate-400" x-text="cl.inbound_id"></td>
+                                    <td class="p-4 text-xs font-mono text-slate-400" x-text="cl.uuid.substring(0, 18) + '...'"></td>
+                                    <td class="p-4"><span class="px-2 py-0.5 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800/40">Active</span></td>
+                                    <td class="p-4 text-right space-x-2">
+                                        <button @click="showShare(cl.email, cl.share_link)" class="text-indigo-400 hover:text-indigo-300 p-1.5"><i class="ph ph-qr-code text-lg"></i></button>
+                                        <button @click="copyToClipboard(cl.share_link)" class="text-slate-400 hover:text-slate-200 p-1.5"><i class="ph ph-copy text-lg"></i></button>
+                                        <button @click="deleteClient(cl.id)" class="text-rose-400 hover:text-rose-300 p-1.5"><i class="ph ph-trash text-lg"></i></button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TAB 4: SSH TUNNELS -->
+            <section x-show="currentTab === 'ssh'" class="space-y-4">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-base font-bold text-white">Native SSH Users (Tunnel Isolated)</h3>
+                    <button @click="modalSSH = true" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
+                        <i class="ph ph-plus font-bold"></i>
+                        <span>Provision SSH User</span>
+                    </button>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl overflow-hidden">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-800/50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-800">
+                            <tr>
+                                <th class="p-4">Username</th>
+                                <th class="p-4">Max Connections</th>
+                                <th class="p-4">Shell Status</th>
+                                <th class="p-4">Created Date</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            <template x-for="u in sshUsers" :key="u.id">
+                                <tr class="hover:bg-slate-800/30 transition">
+                                    <td class="p-4 font-semibold text-white font-mono" x-text="u.username"></td>
+                                    <td class="p-4 text-slate-400" x-text="u.max_connections"></td>
+                                    <td class="p-4"><span class="px-2 py-0.5 text-xs rounded bg-slate-800 text-indigo-300 border border-slate-700">mehboobxt-tunnel-shell</span></td>
+                                    <td class="p-4 text-slate-400 text-xs" x-text="new Date(u.created_at).toLocaleDateString()"></td>
+                                    <td class="p-4 text-right">
+                                        <button @click="deleteSSHUser(u.id)" class="text-rose-400 hover:text-rose-300 p-2"><i class="ph ph-trash text-lg"></i></button>
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- MODAL: ADD INBOUND -->
+    <div x-cloak x-show="modalInbound" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg space-y-4">
+            <h3 class="text-lg font-bold text-white">Create New Inbound</h3>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Tag</label>
+                    <input type="text" x-model="newInbound.tag" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white" placeholder="vless-reality-in">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Protocol</label>
+                        <select x-model="newInbound.protocol" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
+                            <option value="vless">VLESS</option>
+                            <option value="vmess">VMess</option>
+                            <option value="trojan">Trojan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Port</label>
+                        <input type="number" x-model.number="newInbound.port" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Security</label>
+                    <select x-model="newInbound.stream.security" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
+                        <option value="reality">XTLS-Reality</option>
+                        <option value="none">None</option>
+                        <option value="tls">Standard TLS</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-800">
+                <button @click="modalInbound = false" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 text-sm">Cancel</button>
+                <button @click="submitInbound()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold">Save & Sync</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD CLIENT -->
+    <div x-cloak x-show="modalClient" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold text-white">Add Xray Client</h3>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Select Inbound</label>
+                    <select x-model.number="newClient.inbound_id" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
+                        <template x-for="ib in inbounds" :key="ib.id">
+                            <option :value="ib.id" x-text="`${ib.tag} (${ib.protocol} : ${ib.port})`"></option>
+                        </template>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Client Email</label>
+                    <input type="email" x-model="newClient.email" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white" placeholder="user@domain.com">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Flow</label>
+                    <select x-model="newClient.flow" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
+                        <option value="xtls-rprx-vision">xtls-rprx-vision (Reality)</option>
+                        <option value="">None</option>
+                    </select>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-800">
+                <button @click="modalClient = false" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 text-sm">Cancel</button>
+                <button @click="submitClient()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold">Save Client</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD SSH USER -->
+    <div x-cloak x-show="modalSSH" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4">
+            <h3 class="text-lg font-bold text-white">Provision SSH Tunnel User</h3>
+            <div class="space-y-3 text-sm">
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Username</label>
+                    <input type="text" x-model="newSSH.username" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white" placeholder="tunnel_user">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Password</label>
+                    <input type="password" x-model="newSSH.password" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white" placeholder="••••••••">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Max Connections</label>
+                    <input type="number" x-model.number="newSSH.max_connections" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
+                </div>
+            </div>
+            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-800">
+                <button @click="modalSSH = false" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 text-sm">Cancel</button>
+                <button @click="submitSSH()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold">Provision</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SHARE QR -->
+    <div x-cloak x-show="modalShare.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-sm space-y-4 text-center">
+            <h3 class="text-lg font-bold text-white" x-text="modalShare.title"></h3>
+            <div class="p-3 bg-white rounded-xl inline-block" id="qrcode"></div>
+            <p class="text-xs text-slate-400 break-all font-mono" x-text="modalShare.link"></p>
+            <div class="flex justify-center space-x-3 pt-2">
+                <button @click="copyToClipboard(modalShare.link)" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">Copy Link</button>
+                <button @click="modalShare.show = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
