@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-#cat << 'EOF' > /opt/mehboobxt/fix_phase4_frontend.sh
 # ==============================================================================
 # MehboobXT VPS Panel - Phase 4 Frontend Repair Script
 # ==============================================================================
@@ -829,4 +828,3 @@ systemctl daemon-reload
 systemctl restart mehboobxt.service
 
 echo "[OK] Frontend repair deployed successfully."
-EOF
