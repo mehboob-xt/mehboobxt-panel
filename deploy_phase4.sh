@@ -1,5 +1,5 @@
-cat << 'EOF' > /opt/mehboobxt/deploy_phase4.sh
 #!/usr/bin/env bash
+#cat << 'EOF' > /opt/mehboobxt/deploy_phase4.sh
 # ==============================================================================
 # MehboobXT VPS Panel - Phase 4 Standalone Deployment Script
 # Responsive Web GUI Frontend (Tailwind CSS + Alpine.js + Jinja2)
