@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}MehboobXT Panel{% endblock %}</title>
-    <!-- Tailwind CSS (Play CDN for standalone zero-node runtime) -->
+    <!-- Tailwind CSS Play CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -24,13 +24,18 @@
             }
         }
     </script>
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- QRCode.js -->
+    <!-- QRCode.js (Non-blocking fallback) -->
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <!-- Custom Stylesheet -->
     <link rel="stylesheet" href="/static/css/custom.css">
+    
+    <!-- Core Application Component (Loaded BEFORE Alpine so stores are declared) -->
+    <script src="/static/js/app.js"></script>
+    
+    <!-- Alpine.js Core (deferred execution) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col font-sans">
     {% block content %}{% endblock %}
