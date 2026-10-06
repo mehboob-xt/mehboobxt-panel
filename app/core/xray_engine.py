@@ -15,7 +15,7 @@ class XrayEngine:
             temp_path = tf.name
 
         try:
-            cmd = [settings.xray_bin, "test", "-config", temp_path]
+            cmd = [settings.xray_bin, "run", "-test", "-config", temp_path]
             proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=10)
             if proc.returncode == 0:
                 return True, "Configuration validated successfully."
