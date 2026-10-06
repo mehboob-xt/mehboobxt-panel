@@ -26,6 +26,13 @@ if [[ "$(id -u)" -ne 0 ]]; then
     log_fatal "Must be run as root."
 fi
 
+# ==============================================================================
+# BUG FIX 1: Missing Dependencies Install Karna
+# ==============================================================================
+log_info "Installing missing Python dependencies (psutil, jinja2)..."
+"${PANEL_DIR}/venv/bin/pip" install psutil jinja2 >/dev/null 2>&1 || log_fatal "Failed to install Python dependencies."
+log_success "Python dependencies installed."
+
 log_info "Creating templates and static assets directories..."
 mkdir -p "${APP_DIR}/templates" "${APP_DIR}/static/css" "${APP_DIR}/static/js"
 
@@ -804,19 +811,22 @@ async def index_view(request: Request):
         return RedirectResponse(url="/dashboard", status_code=302)
     return RedirectResponse(url="/login", status_code=302)
 
+# ==============================================================================
+# BUG FIX 2: Naya FastAPI/Starlette TemplateResponse Syntax
+# ==============================================================================
 @app.get("/login", response_class=HTMLResponse)
 async def login_view(request: Request):
     token = request.cookies.get("access_token")
     if token and decode_access_token(token):
         return RedirectResponse(url="/dashboard", status_code=302)
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="login.html")
 
 @app.get("/dashboard", response_class=HTMLResponse)
 async def dashboard_view(request: Request):
     token = request.cookies.get("access_token")
     if not token or not decode_access_token(token):
         return RedirectResponse(url="/login", status_code=302)
-    return templates.TemplateResponse("dashboard.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="dashboard.html")
 
 @app.get("/health")
 async def health():
