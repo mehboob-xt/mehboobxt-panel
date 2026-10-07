@@ -14,10 +14,11 @@ function panelAppData() {
         modalSSH: false,
         modalShare: { show: false, link: '', title: '' },
 
+        // Inbound Form with default port 10000 (prevents 443 web collision)
         newInbound: {
             tag: '',
             protocol: 'vless',
-            port: 443,
+            port: 10000,
             listen: '0.0.0.0',
             stream: {
                 network: 'tcp',
@@ -138,12 +139,36 @@ function panelAppData() {
 
         openInboundModal() {
             this.modalInbound = true;
+            if (!this.newInbound.port || this.newInbound.port === 443) {
+                this.newInbound.port = 10000;
+            }
             if (this.newInbound.stream.security === 'reality' && !this.newInbound.stream.reality_settings.private_key) {
                 this.generateRealityKeys();
             }
         },
 
         async submitInbound() {
+            const portNum = Number(this.newInbound.port);
+
+            // Client-Side Port Validation
+            if (!portNum || isNaN(portNum)) {
+                this.notify("Port must be a valid number.", "error");
+                return;
+            }
+            if (portNum < 1 || portNum > 65535) {
+                this.notify("Port must be between 1 and 65535.", "error");
+                return;
+            }
+            if ([22, 80, 443, 2053].includes(portNum)) {
+                this.notify(`Port ${portNum} is reserved by the server (SSH/Nginx/Web/Panel). Use port 10000+`, "error");
+                return;
+            }
+            const collision = this.inbounds.find(ib => Number(ib.port) === portNum);
+            if (collision) {
+                this.notify(`Port ${portNum} is already assigned to inbound '${collision.tag}'.`, "error");
+                return;
+            }
+
             this.loading = true;
             try {
                 const payload = JSON.parse(JSON.stringify(this.newInbound));
@@ -151,7 +176,7 @@ function panelAppData() {
                     payload.stream.reality_settings = null;
                 } else {
                     if (!payload.stream.reality_settings.private_key || !payload.stream.reality_settings.public_key) {
-                        this.notify("Please generate or provide Reality keys", "error");
+                        this.notify("Please generate or provide Reality keys.", "error");
                         this.loading = false;
                         return;
                     }
@@ -361,16 +386,13 @@ function panelAppData() {
     };
 }
 
-// Deterministic Registration Strategy:
-// 1. Alpine lifecycle hook
+// Deterministic Alpine Lifecycle Hooks
 document.addEventListener('alpine:init', () => {
     Alpine.data('panelApp', panelAppData);
 });
 
-// 2. Direct assignment if Alpine has already initialized
 if (window.Alpine) {
     window.Alpine.data('panelApp', panelAppData);
 }
 
-// 3. Global function fallback (Alpine falls back to window.panelApp())
 window.panelApp = panelAppData;

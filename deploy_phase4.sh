@@ -1,18 +1,232 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# MehboobXT VPS Panel - Phase 4 Frontend Repair Script
+# MehboobXT VPS Panel - Phase 4 Final Fix Script
+# Socket-Level Bind Validation, DB Cleanup & Runtime Sync
 # ==============================================================================
 
 set -euo pipefail
 IFS=$'\n\t'
 
-readonly PANEL_DIR="/opt/mehboobxt"
-readonly APP_DIR="${PANEL_DIR}/app"
 readonly REPO_DIR="/root/mehboobxt-panel"
-readonly VENV_PYTHON="${PANEL_DIR}/venv/bin/python3"
+readonly PANEL_DIR="/opt/mehboobxt"
+readonly PYTHON_BIN="${PANEL_DIR}/venv/bin/python3"
+readonly DB_FILE="${PANEL_DIR}/database/mehboobxt.db"
+readonly XRAY_CONFIG="${PANEL_DIR}/config/xray_config.json"
 
-echo "[INFO] Updating /opt/mehboobxt/app/static/js/app.js with deterministic Alpine lifecycle..."
-cat << 'JS_EOF' > "${APP_DIR}/static/js/app.js"
+readonly CYAN='\033[0;36m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly RED='\033[0;31m'
+readonly NC='\033[0m'
+
+log_info()    { echo -e "${CYAN}[INFO]${NC} $1"; }
+log_success() { echo -e "${GREEN}[OK]${NC} $1"; }
+log_warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
+log_fatal()   { echo -e "${RED}[FATAL]${NC} $1" >&2; exit 1; }
+
+# Pre-flight root check
+if [[ "$(id -u)" -ne 0 ]]; then
+    log_fatal "This script must be executed as root."
+fi
+
+# Ensure Python virtual environment exists
+if [[ ! -x "${PYTHON_BIN}" ]]; then
+    log_fatal "Virtual environment Python not found at ${PYTHON_BIN}."
+fi
+
+# ------------------------------------------------------------------------------
+# 1. Purge Conflicting Port 443 Record from SQLite Database
+# ------------------------------------------------------------------------------
+log_info "Auditing and purging conflicting port 443 records from SQLite database..."
+"${PYTHON_BIN}" - << 'PY_CLEANUP'
+import sqlite3
+import sys
+
+db_path = "/opt/mehboobxt/database/mehboobxt.db"
+
+try:
+    conn = sqlite3.connect(db_path)
+    cur = conn.cursor()
+
+    # Find conflicting inbounds on port 443
+    cur.execute("SELECT id, tag, port FROM inbounds WHERE port = 443 OR tag = '443'")
+    conflicts = cur.fetchall()
+
+    if conflicts:
+        for ib_id, tag, port in conflicts:
+            print(f"[INFO] Removing conflicting inbound ID {ib_id} (tag='{tag}', port={port})...")
+            # Remove associated clients
+            cur.execute("DELETE FROM clients WHERE inbound_id = ?", (ib_id,))
+            # Remove inbound record
+            cur.execute("DELETE FROM inbounds WHERE id = ?", (ib_id,))
+        conn.commit()
+        print("[OK] Conflicting port 443 records removed from database.")
+    else:
+        print("[INFO] No port 443 conflicts found in database.")
+
+    # Confirm remaining inbounds
+    cur.execute("SELECT id, tag, port FROM inbounds")
+    remaining = cur.fetchall()
+    print(f"[INFO] Remaining inbounds: {remaining}")
+
+    conn.close()
+except Exception as e:
+    print(f"[ERROR] Database cleanup failed: {e}", file=sys.stderr)
+    sys.exit(1)
+PY_CLEANUP
+log_success "Database cleanup completed."
+
+# ------------------------------------------------------------------------------
+# 2. Patch app/api/inbounds.py with Socket-Level Validation
+# ------------------------------------------------------------------------------
+log_info "Patching ${REPO_DIR}/app/api/inbounds.py with pre-flight socket validation..."
+cat << 'PY_INBOUNDS' > "${REPO_DIR}/app/api/inbounds.py"
+import json
+import socket
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, func
+from typing import List
+from app.db.database import get_db
+from app.db.models import Admin, Inbound, Client
+from app.api.auth import get_current_admin
+from app.schemas.xray import InboundCreate, InboundUpdate, InboundResponse, StreamSettings
+from app.services.xray_service import XrayService
+
+router = APIRouter(prefix="/api/inbounds", tags=["Inbound Management"])
+
+def verify_socket_bindable(port: int, host: str = "0.0.0.0") -> tuple[bool, str]:
+    """
+    Performs active Linux TCP socket pre-flight checks across IPv4 and IPv6
+    to prevent EADDRINUSE collisions before modifying DB or Xray.
+    """
+    # 1. System Reserved Ports Check
+    if port in (22, 80, 443, 2053):
+        return False, f"Port {port} is reserved by system daemons (SSH/Web/Nginx/Panel)."
+
+    # 2. IPv4 Socket Binding Probe
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe_s4:
+            probe_s4.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            probe_s4.bind((host if host != "::" else "0.0.0.0", port))
+    except OSError as e:
+        return False, f"TCP port {port} is already bound by another process: {e.strerror}"
+
+    # 3. IPv6 Socket Binding Probe (for wildcard bindings)
+    if host in ("0.0.0.0", "::"):
+        try:
+            with socket.socket(socket.AF_INET6, socket.SOCK_STREAM) as probe_s6:
+                probe_s6.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                probe_s6.bind(("::", port))
+        except OSError as e:
+            if e.errno == 98 or "already in use" in str(e).lower():
+                return False, f"TCP port {port} (IPv6) is already bound by another process: {e.strerror}"
+        except Exception:
+            pass
+
+    return True, ""
+
+@router.get("", response_model=List[InboundResponse])
+async def list_inbounds(db: AsyncSession = Depends(get_db), _: Admin = Depends(get_current_admin)):
+    result = await db.execute(select(Inbound))
+    inbounds = result.scalars().all()
+    out = []
+    for ib in inbounds:
+        count_res = await db.execute(select(func.count(Client.id)).filter_by(inbound_id=ib.id))
+        count = count_res.scalar() or 0
+        stream_data = json.loads(ib.stream_settings_json) if ib.stream_settings_json else {}
+        out.append(InboundResponse(
+            id=ib.id,
+            tag=ib.tag,
+            protocol=ib.protocol,
+            port=ib.port,
+            listen=ib.listen,
+            stream=StreamSettings(**stream_data),
+            sniffing_enabled=True,
+            up_bytes=ib.up_bytes,
+            down_bytes=ib.down_bytes,
+            total_limit_bytes=ib.total_limit_bytes,
+            expiry_timestamp=ib.expiry_timestamp,
+            is_enabled=ib.is_enabled,
+            client_count=count
+        ))
+    return out
+
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_inbound(
+    payload: InboundCreate,
+    db: AsyncSession = Depends(get_db),
+    _: Admin = Depends(get_current_admin)
+):
+    # Step A: Pre-flight OS Kernel Socket Binding Check
+    is_bindable, reason = verify_socket_bindable(payload.port, payload.listen)
+    if not is_bindable:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Port collision: {reason}. Choose an available port (e.g. 10000-60000)."
+        )
+
+    # Step B: Database Tag and Port Collision Check
+    existing = await db.execute(
+        select(Inbound).filter((Inbound.port == payload.port) | (Inbound.tag == payload.tag))
+    )
+    if existing.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Inbound with port {payload.port} or tag '{payload.tag}' already exists in database."
+        )
+
+    # Step C: Write Inbound to Database
+    inbound = Inbound(
+        tag=payload.tag,
+        protocol=payload.protocol,
+        port=payload.port,
+        listen=payload.listen,
+        stream_settings_json=json.dumps(payload.stream.model_dump()),
+        sniffing_json=json.dumps({"enabled": payload.sniffing_enabled}),
+        total_limit_bytes=payload.total_limit_bytes,
+        expiry_timestamp=payload.expiry_timestamp,
+        is_enabled=payload.is_enabled
+    )
+    db.add(inbound)
+    await db.commit()
+    await db.refresh(inbound)
+
+    # Step D: Atomic Sync & Reload Xray Service
+    ok, msg = await XrayService.sync_database_to_xray(db)
+    if not ok:
+        await db.delete(inbound)
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Xray core validation rejected configuration: {msg}"
+        )
+
+    return {"success": True, "id": inbound.id, "message": "Inbound created and synced successfully."}
+
+@router.delete("/{inbound_id}")
+async def delete_inbound(
+    inbound_id: int,
+    db: AsyncSession = Depends(get_db),
+    _: Admin = Depends(get_current_admin)
+):
+    res = await db.execute(select(Inbound).filter_by(id=inbound_id))
+    inbound = res.scalar_one_or_none()
+    if not inbound:
+        raise HTTPException(status_code=404, detail="Inbound not found")
+
+    await db.delete(inbound)
+    await db.commit()
+    await XrayService.sync_database_to_xray(db)
+    return {"success": True, "message": "Inbound removed and Xray configuration re-synced."}
+PY_INBOUNDS
+log_success "Patched app/api/inbounds.py."
+
+# ------------------------------------------------------------------------------
+# 3. Patch app/static/js/app.js (Default Port 10000 + Port Validation)
+# ------------------------------------------------------------------------------
+log_info "Patching ${REPO_DIR}/app/static/js/app.js to remove port 443 default..."
+cat << 'JS_PATCH' > "${REPO_DIR}/app/static/js/app.js"
 function panelAppData() {
     return {
         currentTab: 'overview',
@@ -29,10 +243,11 @@ function panelAppData() {
         modalSSH: false,
         modalShare: { show: false, link: '', title: '' },
 
+        // Inbound Form with default port 10000 (prevents 443 web collision)
         newInbound: {
             tag: '',
             protocol: 'vless',
-            port: 443,
+            port: 10000,
             listen: '0.0.0.0',
             stream: {
                 network: 'tcp',
@@ -153,12 +368,36 @@ function panelAppData() {
 
         openInboundModal() {
             this.modalInbound = true;
+            if (!this.newInbound.port || this.newInbound.port === 443) {
+                this.newInbound.port = 10000;
+            }
             if (this.newInbound.stream.security === 'reality' && !this.newInbound.stream.reality_settings.private_key) {
                 this.generateRealityKeys();
             }
         },
 
         async submitInbound() {
+            const portNum = Number(this.newInbound.port);
+
+            // Client-Side Port Validation
+            if (!portNum || isNaN(portNum)) {
+                this.notify("Port must be a valid number.", "error");
+                return;
+            }
+            if (portNum < 1 || portNum > 65535) {
+                this.notify("Port must be between 1 and 65535.", "error");
+                return;
+            }
+            if ([22, 80, 443, 2053].includes(portNum)) {
+                this.notify(`Port ${portNum} is reserved by the server (SSH/Nginx/Web/Panel). Use port 10000+`, "error");
+                return;
+            }
+            const collision = this.inbounds.find(ib => Number(ib.port) === portNum);
+            if (collision) {
+                this.notify(`Port ${portNum} is already assigned to inbound '${collision.tag}'.`, "error");
+                return;
+            }
+
             this.loading = true;
             try {
                 const payload = JSON.parse(JSON.stringify(this.newInbound));
@@ -166,7 +405,7 @@ function panelAppData() {
                     payload.stream.reality_settings = null;
                 } else {
                     if (!payload.stream.reality_settings.private_key || !payload.stream.reality_settings.public_key) {
-                        this.notify("Please generate or provide Reality keys", "error");
+                        this.notify("Please generate or provide Reality keys.", "error");
                         this.loading = false;
                         return;
                     }
@@ -376,455 +615,83 @@ function panelAppData() {
     };
 }
 
-// Deterministic Registration Strategy:
-// 1. Alpine lifecycle hook
+// Deterministic Alpine Lifecycle Hooks
 document.addEventListener('alpine:init', () => {
     Alpine.data('panelApp', panelAppData);
 });
 
-// 2. Direct assignment if Alpine has already initialized
 if (window.Alpine) {
     window.Alpine.data('panelApp', panelAppData);
 }
 
-// 3. Global function fallback (Alpine falls back to window.panelApp())
 window.panelApp = panelAppData;
-JS_EOF
+JS_PATCH
+log_success "Patched app/static/js/app.js."
 
-echo "[INFO] Updating /opt/mehboobxt/app/templates/base.html with explicit app.js inclusion..."
-cat << 'BASE_EOF' > "${APP_DIR}/templates/base.html"
-<!DOCTYPE html>
-<html lang="en" class="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}MehboobXT Panel{% endblock %}</title>
-    <!-- Tailwind CSS Play CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#312e81'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <!-- QRCode.js (Non-blocking fallback) -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
-    <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="/static/css/custom.css">
-    
-    <!-- Core Application Component (Loaded BEFORE Alpine so stores are declared) -->
-    <script src="/static/js/app.js"></script>
-    
-    <!-- Alpine.js Core (deferred execution) -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
-</head>
-<body class="bg-slate-950 text-slate-100 min-h-screen antialiased flex flex-col font-sans">
-    {% block content %}{% endblock %}
-</body>
-</html>
-BASE_EOF
+# ------------------------------------------------------------------------------
+# 4. Copy Patched Files to Live Runtime /opt/mehboobxt/
+# ------------------------------------------------------------------------------
+log_info "Synchronizing patched files from ${REPO_DIR} to ${PANEL_DIR}..."
+cp -p "${REPO_DIR}/app/api/inbounds.py" "${PANEL_DIR}/app/api/inbounds.py"
+cp -p "${REPO_DIR}/app/static/js/app.js" "${PANEL_DIR}/app/static/js/app.js"
+log_success "Runtime synchronization completed."
 
-echo "[INFO] Updating /opt/mehboobxt/app/templates/dashboard.html with mobile drawer & responsive layout..."
-cat << 'DASH_EOF' > "${APP_DIR}/templates/dashboard.html"
-{% extends "base.html" %}
-{% block title %}Dashboard - MehboobXT Panel{% endblock %}
-{% block content %}
-<div x-data="panelApp" class="flex flex-col md:flex-row h-screen overflow-hidden bg-slate-950">
+# ------------------------------------------------------------------------------
+# 5. Synchronize Database State to Xray Configuration JSON
+# ------------------------------------------------------------------------------
+log_info "Synchronizing database to ${XRAY_CONFIG}..."
+(cd "${PANEL_DIR}" && "${PYTHON_BIN}" - << 'PY_SYNC'
+import asyncio
+from app.db.database import AsyncSessionLocal
+from app.services.xray_service import XrayService
 
-    <!-- Mobile Drawer Overlay -->
-    <div x-cloak x-show="mobileMenuOpen" @click="mobileMenuOpen = false" 
-         class="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm md:hidden"></div>
+async def main():
+    async with AsyncSessionLocal() as session:
+        ok, msg = await XrayService.sync_database_to_xray(session)
+        if not ok:
+            print(f"[FATAL] Config sync failed: {msg}")
+            exit(1)
+        print(f"[OK] {msg}")
 
-    <!-- Responsive Sidebar (Drawer on mobile, fixed column on desktop) -->
-    <aside :class="mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'"
-           class="fixed inset-y-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-4 transition-transform duration-200 ease-in-out md:static md:translate-x-0">
-        <div>
-            <div class="flex items-center justify-between px-2 py-4 mb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
-                        <i class="ph-bold ph-shield-check text-2xl"></i>
-                    </div>
-                    <div>
-                        <h2 class="font-bold text-base text-white">MehboobXT</h2>
-                        <span class="text-xs text-indigo-400 font-medium">Enterprise v4.0</span>
-                    </div>
-                </div>
-                <button @click="mobileMenuOpen = false" class="md:hidden text-slate-400 hover:text-white p-1">
-                    <i class="ph ph-x text-xl"></i>
-                </button>
-            </div>
+asyncio.run(main())
+PY_SYNC
+)
+log_success "Xray configuration rebuilt without port 443 conflicts."
 
-            <nav class="space-y-1.5">
-                <button @click="currentTab = 'overview'; mobileMenuOpen = false" 
-                        :class="currentTab === 'overview' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'" 
-                        class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all">
-                    <i class="ph ph-squares-four text-lg"></i>
-                    <span>Overview</span>
-                </button>
-                <button @click="currentTab = 'inbounds'; mobileMenuOpen = false" 
-                        :class="currentTab === 'inbounds' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'" 
-                        class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all">
-                    <i class="ph ph-arrows-in-cardinal text-lg"></i>
-                    <span>Inbounds</span>
-                </button>
-                <button @click="currentTab = 'clients'; mobileMenuOpen = false" 
-                        :class="currentTab === 'clients' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'" 
-                        class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all">
-                    <i class="ph ph-users text-lg"></i>
-                    <span>Xray Clients</span>
-                </button>
-                <button @click="currentTab = 'ssh'; mobileMenuOpen = false" 
-                        :class="currentTab === 'ssh' ? 'bg-indigo-600/20 text-indigo-400 border border-indigo-500/30' : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-200'" 
-                        class="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl font-medium text-sm transition-all">
-                    <i class="ph ph-terminal-window text-lg"></i>
-                    <span>SSH Tunnels</span>
-                </button>
-            </nav>
-        </div>
+# ------------------------------------------------------------------------------
+# 6. Execute Strict Verification Chain
+# ------------------------------------------------------------------------------
+log_info "Validating Python compilation..."
+"${PYTHON_BIN}" -m py_compile \
+    "${PANEL_DIR}/app/main.py" \
+    "${PANEL_DIR}/app/api/inbounds.py" \
+    "${PANEL_DIR}/app/services/xray_service.py"
+log_success "Python compilation OK."
 
-        <div class="border-t border-slate-800 pt-4">
-            <button @click="logout()" class="w-full flex items-center space-x-3 px-3.5 py-2.5 text-rose-400 hover:bg-rose-500/10 rounded-xl font-medium text-sm transition-all">
-                <i class="ph ph-sign-out text-lg"></i>
-                <span>Sign Out</span>
-            </button>
-        </div>
-    </aside>
+log_info "Executing Xray core test on active configuration..."
+"${PANEL_DIR}/bin/xray" run -test -config "${XRAY_CONFIG}"
+log_success "Xray configuration passed validation."
 
-    <!-- Main Workspace Canvas -->
-    <main class="flex-1 overflow-y-auto flex flex-col min-w-0">
-        <!-- Topbar -->
-        <header class="h-16 border-b border-slate-800 bg-slate-900/40 backdrop-blur px-4 md:px-8 flex items-center justify-between shrink-0">
-            <div class="flex items-center space-x-3">
-                <button @click="mobileMenuOpen = true" class="md:hidden text-slate-300 hover:text-white p-1 rounded-lg border border-slate-700">
-                    <i class="ph ph-list text-2xl"></i>
-                </button>
-                <h1 class="text-sm md:text-base font-bold text-white uppercase tracking-wider" x-text="currentTab"></h1>
-            </div>
-            <div class="flex items-center space-x-3">
-                <div class="flex items-center space-x-2 text-xs font-semibold px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700">
-                    <span class="w-2 h-2 rounded-full" :class="systemInfo.xray_status === 'running' ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-rose-400'"></span>
-                    <span class="text-slate-300">Xray-Core: <span x-text="systemInfo.xray_status" class="uppercase"></span></span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Workspace -->
-        <div class="p-4 md:p-8 space-y-6 flex-1">
-            <!-- Toast Notification -->
-            <div x-cloak x-show="toast.show" x-transition class="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl shadow-xl flex items-center space-x-3 border"
-                :class="toast.type === 'success' ? 'bg-emerald-950/90 text-emerald-300 border-emerald-800' : 'bg-rose-950/90 text-rose-300 border-rose-800'">
-                <i :class="toast.type === 'success' ? 'ph ph-check-circle text-xl' : 'ph ph-x-circle text-xl'"></i>
-                <span class="text-sm font-medium" x-text="toast.message"></span>
-            </div>
-
-            <!-- TAB 1: OVERVIEW -->
-            <section x-show="currentTab === 'overview'" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-                        <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider">CPU Utilization</span>
-                            <i class="ph ph-cpu text-xl text-indigo-400"></i>
-                        </div>
-                        <div class="text-3xl font-extrabold text-white" x-text="`${systemInfo.cpu}%`"></div>
-                        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4">
-                            <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" :style="`width: ${systemInfo.cpu}%`"></div>
-                        </div>
-                    </div>
-
-                    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-                        <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider">RAM Consumption</span>
-                            <i class="ph ph-hard-drive text-xl text-indigo-400"></i>
-                        </div>
-                        <div class="text-3xl font-extrabold text-white" x-text="`${systemInfo.ram}%`"></div>
-                        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4">
-                            <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" :style="`width: ${systemInfo.ram}%`"></div>
-                        </div>
-                    </div>
-
-                    <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
-                        <div class="flex items-center justify-between text-slate-400 mb-2">
-                            <span class="text-xs font-semibold uppercase tracking-wider">Disk Storage Used</span>
-                            <i class="ph ph-database text-xl text-indigo-400"></i>
-                        </div>
-                        <div class="text-3xl font-extrabold text-white" x-text="`${systemInfo.disk}%`"></div>
-                        <div class="w-full bg-slate-800 rounded-full h-1.5 mt-4">
-                            <div class="bg-indigo-500 h-1.5 rounded-full transition-all duration-300" :style="`width: ${systemInfo.disk}%`"></div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 2: INBOUNDS -->
-            <section x-show="currentTab === 'inbounds'" class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">Active Inbounds</h3>
-                    <button @click="openInboundModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
-                        <i class="ph ph-plus font-bold"></i>
-                        <span>Create Inbound</span>
-                    </button>
-                </div>
-
-                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300 min-w-[500px]">
-                        <thead class="bg-slate-800/50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-800">
-                            <tr>
-                                <th class="p-4">Tag</th>
-                                <th class="p-4">Protocol</th>
-                                <th class="p-4">Port</th>
-                                <th class="p-4">Transport</th>
-                                <th class="p-4">Clients</th>
-                                <th class="p-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800/60">
-                            <template x-for="ib in inbounds" :key="ib.id">
-                                <tr class="hover:bg-slate-800/30 transition">
-                                    <td class="p-4 font-semibold text-white" x-text="ib.tag"></td>
-                                    <td class="p-4"><span class="px-2.5 py-1 rounded-md text-xs font-bold uppercase bg-indigo-950 text-indigo-400 border border-indigo-800/40" x-text="ib.protocol"></span></td>
-                                    <td class="p-4 text-slate-300" x-text="ib.port"></td>
-                                    <td class="p-4 text-slate-400" x-text="`${ib.stream.network} (${ib.stream.security})`"></td>
-                                    <td class="p-4 text-slate-400" x-text="ib.client_count"></td>
-                                    <td class="p-4 text-right">
-                                        <button @click="deleteInbound(ib.id)" class="text-rose-400 hover:text-rose-300 p-2"><i class="ph ph-trash text-lg"></i></button>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- TAB 3: CLIENTS -->
-            <section x-show="currentTab === 'clients'" class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">Xray Proxy Clients</h3>
-                    <button @click="modalClient = true" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
-                        <i class="ph ph-user-plus font-bold"></i>
-                        <span>Add Client</span>
-                    </button>
-                </div>
-
-                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300 min-w-[600px]">
-                        <thead class="bg-slate-800/50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-800">
-                            <tr>
-                                <th class="p-4">Email</th>
-                                <th class="p-4">Inbound ID</th>
-                                <th class="p-4">UUID</th>
-                                <th class="p-4">Status</th>
-                                <th class="p-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800/60">
-                            <template x-for="cl in clients" :key="cl.id">
-                                <tr class="hover:bg-slate-800/30 transition">
-                                    <td class="p-4 font-semibold text-white" x-text="cl.email"></td>
-                                    <td class="p-4 text-slate-400" x-text="cl.inbound_id"></td>
-                                    <td class="p-4 text-xs font-mono text-slate-400" x-text="cl.uuid.substring(0, 18) + '...'"></td>
-                                    <td class="p-4"><span class="px-2 py-0.5 text-xs rounded bg-emerald-950 text-emerald-400 border border-emerald-800/40">Active</span></td>
-                                    <td class="p-4 text-right space-x-2">
-                                        <button @click="showShare(cl.email, cl.share_link)" class="text-indigo-400 hover:text-indigo-300 p-1.5"><i class="ph ph-qr-code text-lg"></i></button>
-                                        <button @click="copyToClipboard(cl.share_link)" class="text-slate-400 hover:text-slate-200 p-1.5"><i class="ph ph-copy text-lg"></i></button>
-                                        <button @click="deleteClient(cl.id)" class="text-rose-400 hover:text-rose-300 p-1.5"><i class="ph ph-trash text-lg"></i></button>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- TAB 4: SSH TUNNELS -->
-            <section x-show="currentTab === 'ssh'" class="space-y-4">
-                <div class="flex justify-between items-center">
-                    <h3 class="text-base font-bold text-white">Native SSH Users (Tunnel Isolated)</h3>
-                    <button @click="modalSSH = true" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5">
-                        <i class="ph ph-plus font-bold"></i>
-                        <span>Provision SSH User</span>
-                    </button>
-                </div>
-
-                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300 min-w-[500px]">
-                        <thead class="bg-slate-800/50 text-xs uppercase text-slate-400 font-semibold border-b border-slate-800">
-                            <tr>
-                                <th class="p-4">Username</th>
-                                <th class="p-4">Max Connections</th>
-                                <th class="p-4">Shell Status</th>
-                                <th class="p-4">Created Date</th>
-                                <th class="p-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-800/60">
-                            <template x-for="u in sshUsers" :key="u.id">
-                                <tr class="hover:bg-slate-800/30 transition">
-                                    <td class="p-4 font-semibold text-white font-mono" x-text="u.username"></td>
-                                    <td class="p-4 text-slate-400" x-text="u.max_connections"></td>
-                                    <td class="p-4"><span class="px-2 py-0.5 text-xs rounded bg-slate-800 text-indigo-300 border border-slate-700">mehboobxt-tunnel-shell</span></td>
-                                    <td class="p-4 text-slate-400 text-xs" x-text="new Date(u.created_at).toLocaleDateString()"></td>
-                                    <td class="p-4 text-right">
-                                        <button @click="deleteSSHUser(u.id)" class="text-rose-400 hover:text-rose-300 p-2"><i class="ph ph-trash text-lg"></i></button>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-    </main>
-
-    <!-- MODAL: ADD INBOUND -->
-    <div x-cloak x-show="modalInbound" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 class="text-lg font-bold text-white">Create New Inbound</h3>
-            <div class="space-y-3 text-sm">
-                <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Tag</label>
-                    <input type="text" x-model="newInbound.tag" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white" placeholder="vless-reality-in">
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Protocol</label>
-                        <select x-model="newInbound.protocol" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
-                            <option value="vless">VLESS</option>
-                            <option value="vmess">VMess</option>
-                            <option value="trojan">Trojan</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Port</label>
-                        <input type="number" x-model.number="newInbound.port" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Security</label>
-                    <select x-model="newInbound.stream.security" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
-                        <option value="reality">XTLS-Reality</option>
-                        <option value="none">None</option>
-                        <option value="tls">Standard TLS</option>
-                    </select>
-                </div>
-                <div x-show="newInbound.stream.security === 'reality'" class="space-y-3 border-t border-slate-800 pt-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-indigo-400 uppercase">Reality Configuration</span>
-                        <button type="button" @click="generateRealityKeys()" class="text-xs text-indigo-400 hover:text-indigo-300 underline">Generate Keys</button>
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Private Key</label>
-                        <input type="text" x-model="newInbound.stream.reality_settings.private_key" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs font-mono text-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs text-slate-400 mb-1">Public Key</label>
-                        <input type="text" x-model="newInbound.stream.reality_settings.public_key" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2 text-xs font-mono text-white">
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-800">
-                <button @click="modalInbound = false" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 text-sm">Cancel</button>
-                <button @click="submitInbound()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold">Save & Sync</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: ADD CLIENT -->
-    <div x-cloak x-show="modalClient" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4">
-            <h3 class="text-lg font-bold text-white">Add Xray Client</h3>
-            <div class="space-y-3 text-sm">
-                <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Select Inbound</label>
-                    <select x-model.number="newClient.inbound_id" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
-                        <template x-for="ib in inbounds" :key="ib.id">
-                            <option :value="ib.id" x-text="`${ib.tag} (${ib.protocol} : ${ib.port})`"></option>
-                        </template>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Client Email</label>
-                    <input type="email" x-model="newClient.email" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white" placeholder="user@domain.com">
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Flow</label>
-                    <select x-model="newClient.flow" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
-                        <option value="xtls-rprx-vision">xtls-rprx-vision (Reality)</option>
-                        <option value="">None</option>
-                    </select>
-                </div>
-            </div>
-            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-800">
-                <button @click="modalClient = false" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 text-sm">Cancel</button>
-                <button @click="submitClient()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold">Save Client</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: ADD SSH USER -->
-    <div x-cloak x-show="modalSSH" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md space-y-4">
-            <h3 class="text-lg font-bold text-white">Provision SSH Tunnel User</h3>
-            <div class="space-y-3 text-sm">
-                <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Username</label>
-                    <input type="text" x-model="newSSH.username" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white" placeholder="tunnel_user">
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Password</label>
-                    <input type="password" x-model="newSSH.password" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white" placeholder="••••••••">
-                </div>
-                <div>
-                    <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Max Connections</label>
-                    <input type="number" x-model.number="newSSH.max_connections" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-2.5 text-white">
-                </div>
-            </div>
-            <div class="flex justify-end space-x-3 pt-4 border-t border-slate-800">
-                <button @click="modalSSH = false" class="px-4 py-2 rounded-xl text-slate-400 hover:bg-slate-800 text-sm">Cancel</button>
-                <button @click="submitSSH()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-sm font-semibold">Provision</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: SHARE QR -->
-    <div x-cloak x-show="modalShare.show" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-sm space-y-4 text-center">
-            <h3 class="text-lg font-bold text-white" x-text="modalShare.title"></h3>
-            <div class="p-3 bg-white rounded-xl inline-block" id="qrcode"></div>
-            <p class="text-xs text-slate-400 break-all font-mono" x-text="modalShare.link"></p>
-            <div class="flex justify-center space-x-3 pt-2">
-                <button @click="copyToClipboard(modalShare.link)" class="px-4 py-2 bg-indigo-600 text-white rounded-xl text-xs font-bold">Copy Link</button>
-                <button @click="modalShare.show = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl text-xs">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-DASH_EOF
-
-# Mirror to Git Working Tree
-if [[ -d "${REPO_DIR}/.git" ]]; then
-    echo "[INFO] Mirroring repaired templates and JS to ${REPO_DIR}..."
-    mkdir -p "${REPO_DIR}/app/templates" "${REPO_DIR}/app/static/js"
-    cp -a "${APP_DIR}/templates/." "${REPO_DIR}/app/templates/"
-    cp -a "${APP_DIR}/static/js/." "${REPO_DIR}/app/static/js/"
-fi
-
-# Reload systemd and restart service
+log_info "Restarting systemd services..."
 systemctl daemon-reload
 systemctl restart mehboobxt.service
+systemctl restart mehboobxt-xray.service
 
-echo "[OK] Frontend repair deployed successfully."
+log_info "Checking service status..."
+if systemctl is-active --quiet mehboobxt.service; then
+    log_success "mehboobxt.service: active"
+else
+    log_fatal "mehboobxt.service failed to start."
+fi
+
+if systemctl is-active --quiet mehboobxt-xray.service; then
+    log_success "mehboobxt-xray.service: active"
+else
+    log_fatal "mehboobxt-xray.service failed to start."
+fi
+
+echo ""
+echo -e "${GREEN}====================================================${NC}"
+echo -e "${GREEN}  PHASE 4 FINAL FIX SUCCESSFULLY DEPLOYED!           ${NC}"
+echo -e "${GREEN}  Both mehboobxt and mehboobxt-xray are ACTIVE.     ${NC}"
+echo -e "${GREEN}====================================================${NC}"
